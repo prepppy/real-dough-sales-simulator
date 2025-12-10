@@ -4,13 +4,14 @@ import { Dashboard } from './components/Dashboard';
 import { MapPanel } from './components/MapPanel';
 import { ScenarioBuilder } from './components/ScenarioBuilder';
 import { RetailerTable } from './components/RetailerTable';
-import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign } from 'lucide-react';
+import { ProjectionsView } from './components/ProjectionsView';
+import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const MainLayout: React.FC = () => {
   const { state, setFilter, scenarios, filteredStores } = useSimulation();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'MAP' | 'SCENARIO' | 'TABLE'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'MAP' | 'SCENARIO' | 'TABLE' | 'PROJECTIONS'>('DASHBOARD');
   const [isExporting, setIsExporting] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
 
@@ -66,6 +67,13 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('DASHBOARD')} 
                     icon={<LayoutDashboard size={20} />} 
                     label="Command Center" 
+                    collapsed={presentationMode}
+                />
+                <NavButton 
+                    active={activeTab === 'PROJECTIONS'} 
+                    onClick={() => setActiveTab('PROJECTIONS')} 
+                    icon={<TrendingUp size={20} />} 
+                    label="2026 Projections" 
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -207,6 +215,7 @@ const MainLayout: React.FC = () => {
             {/* Scrollable Viewport */}
             <div id="app-content" className="flex-1 overflow-auto bg-slate-50 p-8 custom-scrollbar">
                 {activeTab === 'DASHBOARD' && <Dashboard />}
+                {activeTab === 'PROJECTIONS' && <ProjectionsView />}
                 {activeTab === 'MAP' && <MapPanel />}
                 {activeTab === 'SCENARIO' && <ScenarioBuilder />}
                 {activeTab === 'TABLE' && <RetailerTable />}
