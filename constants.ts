@@ -129,3 +129,91 @@ export const PROJECTIONS_2026: QuarterlyProjection[] = [
     notes: "Holiday entertaining push. Strong Q4 finish expected.",
   }
 ];
+
+export interface MarketData {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  revenue: number;
+  velocity: number;
+  growth: number;
+  share: number;
+  retailers: string[];
+  topCompetitor: string;
+  competitorGrowth: number;
+  storeCount: number;
+}
+
+export const MARKET_DATA: MarketData[] = [
+  {
+    id: 'm_msp',
+    name: 'Minneapolis / St. Paul',
+    lat: 44.9778,
+    lng: -93.2650,
+    revenue: 127500,
+    velocity: 3.8,
+    growth: 42.0,
+    share: 1.8,
+    retailers: ['Target (45)', 'Walmart (98)', 'Cub Foods (62)', 'Lunds & Byerlys (22)'],
+    topCompetitor: 'Motor City',
+    competitorGrowth: 25.0,
+    storeCount: 227
+  },
+  {
+    id: 'm_mke',
+    name: 'Milwaukee',
+    lat: 43.0389,
+    lng: -87.9065,
+    revenue: 95300,
+    velocity: 3.1,
+    growth: 38.0,
+    share: 1.5,
+    retailers: ['Pick \'n Save (48)', 'Festival Foods (12)', 'Woodman\'s (4)'],
+    topCompetitor: 'Palermo\'s',
+    competitorGrowth: 12.0,
+    storeCount: 145
+  },
+  {
+    id: 'm_chi',
+    name: 'Chicago (Greater)',
+    lat: 41.8781,
+    lng: -87.6298,
+    revenue: 185200,
+    velocity: 2.9,
+    growth: 55.0,
+    share: 0.8,
+    retailers: ['Jewel-Osco (120)', 'Mariano\'s (35)', 'Tony\'s Fresh Market (15)'],
+    topCompetitor: 'Home Run Inn',
+    competitorGrowth: 5.0,
+    storeCount: 310
+  },
+  {
+    id: 'm_mad',
+    name: 'Madison',
+    lat: 43.0731,
+    lng: -89.4012,
+    revenue: 62400,
+    velocity: 4.2,
+    growth: 18.0,
+    share: 2.4,
+    retailers: ['Metcalfe\'s (3)', 'Festival Foods (5)', 'Woodman\'s (2)', 'Hy-Vee (2)'],
+    topCompetitor: 'Lotzza Motzza',
+    competitorGrowth: 8.5,
+    storeCount: 45
+  },
+  {
+    id: 'm_dsm',
+    name: 'Des Moines',
+    lat: 41.5868,
+    lng: -93.6250,
+    revenue: 45800,
+    velocity: 3.5,
+    growth: 22.0,
+    share: 1.2,
+    retailers: ['Hy-Vee (18)', 'Fareway (6)', 'Walmart (4)'],
+    topCompetitor: 'Casey\'s (Frozen)',
+    competitorGrowth: 15.0,
+    storeCount: 65
+  }
+];

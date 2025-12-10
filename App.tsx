@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { SimulationProvider, useSimulation } from './context/SimulationContext';
 import { ExecutiveOverview } from './components/ExecutiveOverview';
-import { RoyaltyDashboard } from './components/RoyaltyDashboard'; // New Import
+import { RoyaltyDashboard } from './components/RoyaltyDashboard';
 import { Dashboard } from './components/Dashboard';
+import { MarketPerformance } from './components/MarketPerformance';
+import { SkuPerformance } from './components/SkuPerformance';
 import { MapPanel } from './components/MapPanel';
 import { ScenarioBuilder } from './components/ScenarioBuilder';
 import { RetailerTable } from './components/RetailerTable';
 import { ProjectionsView } from './components/ProjectionsView';
-import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp, PieChart, Banknote } from 'lucide-react'; // Added Banknote
+import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp, PieChart, Banknote, BarChart3, Package } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const MainLayout: React.FC = () => {
   const { state, setFilter, scenarios, filteredStores } = useSimulation();
-  // Updated Tabs: Added ROYALTY, Removed TABLE (renamed to STORE_PERF later), Renamed DASHBOARD to RETAILER_PERF
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ROYALTY' | 'RETAILER_PERF' | 'PROJECTIONS' | 'MAP' | 'SCENARIO' | 'STORE_PERF'>('OVERVIEW'); 
+  // Updated Tabs: Added MARKET_PERF and SKU_PERF
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ROYALTY' | 'RETAILER_PERF' | 'MARKET_PERF' | 'SKU_PERF' | 'PROJECTIONS' | 'MAP' | 'SCENARIO' | 'STORE_PERF'>('OVERVIEW'); 
   const [isExporting, setIsExporting] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
 
@@ -84,6 +86,20 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('RETAILER_PERF')} 
                     icon={<LayoutDashboard size={20} />} 
                     label="Retailer Performance" 
+                    collapsed={presentationMode}
+                />
+                <NavButton 
+                    active={activeTab === 'MARKET_PERF'} 
+                    onClick={() => setActiveTab('MARKET_PERF')} 
+                    icon={<BarChart3 size={20} />} 
+                    label="Market Performance" 
+                    collapsed={presentationMode}
+                />
+                <NavButton 
+                    active={activeTab === 'SKU_PERF'} 
+                    onClick={() => setActiveTab('SKU_PERF')} 
+                    icon={<Package size={20} />} 
+                    label="SKU Performance" 
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -205,6 +221,8 @@ const MainLayout: React.FC = () => {
                 {activeTab === 'OVERVIEW' && <ExecutiveOverview />}
                 {activeTab === 'ROYALTY' && <RoyaltyDashboard />}
                 {activeTab === 'RETAILER_PERF' && <Dashboard />}
+                {activeTab === 'MARKET_PERF' && <MarketPerformance />}
+                {activeTab === 'SKU_PERF' && <SkuPerformance />}
                 {activeTab === 'PROJECTIONS' && <ProjectionsView />}
                 {activeTab === 'MAP' && <MapPanel />}
                 {activeTab === 'SCENARIO' && <ScenarioBuilder />}
