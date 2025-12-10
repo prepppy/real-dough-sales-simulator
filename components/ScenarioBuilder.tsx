@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSimulation } from '../context/SimulationContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Calculator, Save, ArrowRight, TrendingUp, Info, DollarSign, Percent } from 'lucide-react';
+import { calculateBernatellosMargin } from '../utils/financials';
 
 export const ScenarioBuilder: React.FC = () => {
   const { products, retailers, addScenario, formatCurrency, getRetailerChannel } = useSimulation();
@@ -14,44 +15,41 @@ export const ScenarioBuilder: React.FC = () => {
   const [scenarioName, setScenarioName] = useState('Q3 Pitch Scenario');
 
   // Custom Pricing State
-  const [customWholesale, setCustomWholesale] = useState<number>(0);
+  // "customWholesale" now represents the ASP (Average Selling Price) to the retailer
+  const [customASP, setCustomASP] = useState<number>(0); 
   const [customMSRP, setCustomMSRP] = useState<number>(0);
-  const [customCOGS, setCustomCOGS] = useState<number>(0);
+  // COGS is now fixed at $4.34 usually, but we allow override
+  const [customCOGS, setCustomCOGS] = useState<number>(4.34);
   const [slottingFees, setSlottingFees] = useState<number>(0);
-  const [royaltyRate, setRoyaltyRate] = useState<number>(5.0); // Default 5%
 
   const currentRetailer = retailers.find(r => r.id === selectedRetailer);
   const currentProduct = products.find(p => p.id === selectedProduct);
+  const currentChannel = currentRetailer?.channel === 'DSD' ? 'DSD' : 'Warehouse'; 
   
   // Reset defaults when product changes
   useEffect(() => {
     if (currentProduct) {
-        setCustomWholesale(currentProduct.wholesalePrice);
+        setCustomASP(currentProduct.wholesalePrice); // Using wholesalePrice as default ASP
         setCustomMSRP(currentProduct.msrp);
-        setCustomCOGS(currentProduct.cogs);
-        setRoyaltyRate((currentProduct.defaultRoyaltyRate || 0.05) * 100);
+        // Reset COGS to standard 4.34
+        setCustomCOGS(4.34);
     }
   }, [currentProduct]);
 
-  // Advanced Financial Logic
+  // Advanced Financial Logic via Utility
+  const financials = calculateBernatellosMargin(customASP, currentChannel);
+  
+  // Scenario Aggregates
   const estimatedBaseVelocity = 12; // Units/week avg
   
-  // Use custom values for calculations
-  const wholesalePrice = customWholesale;
-  const royaltyAmount = wholesalePrice * (royaltyRate / 100);
-  const unitMargin = wholesalePrice - customCOGS - royaltyAmount;
-  const retailerMarginAmt = customMSRP - customWholesale;
-  const retailerMarginPercent = customMSRP > 0 ? (retailerMarginAmt / customMSRP) * 100 : 0;
-  
-  // Revenue Calcs (Manufacturer Revenue)
-  const annualBaseRevenue = estimatedBaseVelocity * targetStoreCount * wholesalePrice * 52;
-  const promoRevenue = (estimatedBaseVelocity * targetStoreCount * wholesalePrice * promoWeeks * (promoLift / 100));
+  // Revenue = ASP * Units (Manufacturer Revenue)
+  const annualBaseRevenue = estimatedBaseVelocity * targetStoreCount * customASP * 52;
+  const promoRevenue = (estimatedBaseVelocity * targetStoreCount * customASP * promoWeeks * (promoLift / 100));
   const totalRevenue = annualBaseRevenue + promoRevenue;
 
-  // Profit Calcs
-  // Base Profit = Units * (Wholesale - COGS - Royalty)
-  const annualBaseProfitRaw = estimatedBaseVelocity * targetStoreCount * unitMargin * 52;
-  const promoProfit = (estimatedBaseVelocity * targetStoreCount * unitMargin * promoWeeks * (promoLift / 100));
+  // Profit = Net Margin Dollars * Units
+  const annualBaseProfitRaw = estimatedBaseVelocity * targetStoreCount * financials.netMarginDollars * 52;
+  const promoProfit = (estimatedBaseVelocity * targetStoreCount * financials.netMarginDollars * promoWeeks * (promoLift / 100));
   
   // Net Profit = (Base Profit + Promo Profit) - Slotting Fees
   const totalProfit = annualBaseProfitRaw + promoProfit - slottingFees;
@@ -59,6 +57,9 @@ export const ScenarioBuilder: React.FC = () => {
   // Lift
   const liftPercentage = annualBaseRevenue > 0 ? ((totalRevenue - annualBaseRevenue) / annualBaseRevenue) * 100 : 0;
 
+  // Retailer Margin
+  const retailerMarginAmt = customMSRP - customASP;
+  const retailerMarginPercent = customMSRP > 0 ? (retailerMarginAmt / customMSRP) * 100 : 0;
   const isMarginCompliant = currentRetailer && (retailerMarginPercent / 100) >= currentRetailer.marginRequirement;
 
   const data = [
@@ -68,10 +69,10 @@ export const ScenarioBuilder: React.FC = () => {
 
   // Unit Economics Waterfall Data
   const unitEconomicsData = [
-    { name: 'COGS', value: customCOGS, fill: '#94a3b8' }, // Slate 400
-    { name: 'Royalty', value: royaltyAmount, fill: '#f59e0b' }, // Amber 500
-    { name: 'Distrib. Margin', value: unitMargin, fill: '#10b981' }, // Emerald 500
-    { name: 'Retailer Margin', value: retailerMarginAmt, fill: '#3b82f6' }, // Blue 500
+    { name: 'COGS', value: financials.cogs, fill: '#94a3b8' }, // Slate 400
+    { name: 'Marketing', value: financials.marketing, fill: '#f472b6' }, // Pink 400
+    { name: 'Royalty', value: financials.royalty.total, fill: '#f59e0b' }, // Amber 500
+    { name: 'Bernatello\'s Net', value: financials.netMarginDollars, fill: '#10b981' }, // Emerald 500
   ];
 
   const handleSave = () => {
@@ -86,16 +87,21 @@ export const ScenarioBuilder: React.FC = () => {
         promoLiftMultiplier: 1 + (promoLift/100),
         incrementalRevenue: promoRevenue,
         incrementalProfit: promoProfit - slottingFees, // Net incremental
-        customWholesalePrice: customWholesale,
+        customWholesalePrice: customASP,
         customMSRP: customMSRP,
         customCOGS: customCOGS,
         slottingFees: slottingFees,
-        royaltyRate: royaltyRate
+        royaltyRate: 0, // Unused
+        
+        // New Fields
+        calculatedMarketing: financials.marketing,
+        calculatedBaseRoyalty: financials.royalty.base,
+        calculatedAddlRoyalty: financials.royalty.additional,
+        calculatedNetMarginDollars: financials.netMarginDollars,
+        calculatedNetMarginPercent: financials.netMarginPercent
     });
     alert('Scenario Saved!');
   };
-
-  const channel = currentRetailer ? getRetailerChannel(currentRetailer.id) : '';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
@@ -105,7 +111,7 @@ export const ScenarioBuilder: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div className="flex items-center space-x-3 mb-6">
                 <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Calculator size={20} /></div>
-                <h2 className="text-xl font-bold text-slate-800">Unit Economics Config</h2>
+                <h2 className="text-xl font-bold text-slate-800">Bernatello's Deal Config</h2>
             </div>
 
             <div className="space-y-6">
@@ -141,6 +147,12 @@ export const ScenarioBuilder: React.FC = () => {
                         </select>
                     </div>
                 </div>
+                
+                {/* Channel Indicator */}
+                <div className="p-3 bg-slate-50 rounded-lg text-xs font-mono text-slate-500 flex justify-between">
+                    <span>Active Channel Model:</span>
+                    <span className="font-bold text-slate-800 uppercase">{currentChannel}</span>
+                </div>
 
                 {/* Pricing Inputs */}
                 <div className="space-y-4 pt-4 border-t border-slate-100">
@@ -158,34 +170,20 @@ export const ScenarioBuilder: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Wholesale Price</label>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Sell Price (ASP)</label>
                             <input 
                                 type="number" step="0.01"
-                                value={customWholesale}
-                                onChange={(e) => setCustomWholesale(parseFloat(e.target.value) || 0)}
-                                className="w-full p-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700"
+                                value={customASP}
+                                onChange={(e) => setCustomASP(parseFloat(e.target.value) || 0)}
+                                className={`w-full p-2 border rounded-lg text-sm font-semibold text-slate-700 ${customASP < (currentChannel === 'DSD' ? 8.38 : 6.91) ? 'border-amber-300 bg-amber-50' : 'border-slate-200'}`}
                             />
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">COGS (Unit Cost)</label>
-                            <input 
-                                type="number" step="0.01"
-                                value={customCOGS}
-                                onChange={(e) => setCustomCOGS(parseFloat(e.target.value) || 0)}
-                                className="w-full p-2 border border-slate-200 rounded-lg text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Brand Royalty (%)</label>
-                            <input 
-                                type="number" step="0.5"
-                                value={royaltyRate}
-                                onChange={(e) => setRoyaltyRate(parseFloat(e.target.value) || 0)}
-                                className="w-full p-2 border border-slate-200 rounded-lg text-sm text-amber-600 font-medium"
-                            />
+                            {/* ASP Warning */}
+                            {customASP < (currentChannel === 'DSD' ? 8.38 : 6.91) && (
+                                <p className="text-[10px] text-amber-600 mt-1 font-medium">Below Min Tier: Base Royalty Only</p>
+                            )}
                         </div>
                         <div className="col-span-2">
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">One-Time Slotting Fees ($)</label>
+                             <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Slotting Fees ($)</label>
                             <input 
                                 type="number" step="100"
                                 value={slottingFees}
@@ -261,24 +259,25 @@ export const ScenarioBuilder: React.FC = () => {
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
              <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="font-bold text-slate-900 text-lg">Unit Economics</h3>
-                    <p className="text-slate-400 text-sm">Where every dollar of MSRP goes</p>
+                    <h3 className="font-bold text-slate-900 text-lg">Distribution Economics</h3>
+                    <p className="text-slate-400 text-sm">ASP Breakdown per Unit</p>
                 </div>
                 <div className="text-right">
-                    <p className="text-xs text-slate-500 uppercase tracking-wide font-bold">Distrib. Net Margin</p>
-                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(unitMargin)}</p>
+                    <p className="text-xs text-slate-500 uppercase tracking-wide font-bold">Bernatello's Net Margin</p>
+                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(financials.netMarginDollars)}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{financials.netMarginPercent.toFixed(1)}% of ASP</p>
                 </div>
              </div>
              
              {/* Stacked Bar Visual for Unit Econ */}
              <div className="relative h-16 w-full flex rounded-xl overflow-hidden font-bold text-white text-xs">
                 {unitEconomicsData.map((item, i) => {
-                    const pct = (item.value / customMSRP) * 100;
+                    const pct = (item.value / customASP) * 100; // % of ASP, not MSRP for Dist view
                     return (
                         <div key={item.name} style={{ width: `${pct}%`, backgroundColor: item.fill }} className="flex flex-col justify-center items-center h-full relative group">
                             <span className="z-10 drop-shadow-md">${item.value.toFixed(2)}</span>
                             {/* Tooltip on hover */}
-                            <div className="absolute -top-10 bg-slate-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            <div className="absolute -top-10 bg-slate-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                                 {item.name}: {pct.toFixed(1)}%
                             </div>
                         </div>
@@ -287,10 +286,34 @@ export const ScenarioBuilder: React.FC = () => {
              </div>
              <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium px-1">
                 <div className="flex items-center"><div className="w-2 h-2 bg-slate-400 rounded-full mr-1"></div> COGS</div>
-                <div className="flex items-center"><div className="w-2 h-2 bg-amber-500 rounded-full mr-1"></div> Royalty</div>
-                <div className="flex items-center"><div className="w-2 h-2 bg-emerald-500 rounded-full mr-1"></div> Distributor</div>
-                <div className="flex items-center"><div className="w-2 h-2 bg-blue-500 rounded-full mr-1"></div> Retailer</div>
+                <div className="flex items-center"><div className="w-2 h-2 bg-pink-400 rounded-full mr-1"></div> Marketing (5%)</div>
+                <div className="flex items-center"><div className="w-2 h-2 bg-amber-500 rounded-full mr-1"></div> Brand Royalty</div>
+                <div className="flex items-center"><div className="w-2 h-2 bg-emerald-500 rounded-full mr-1"></div> Bernatello's Net</div>
              </div>
+             
+             {/* Detailed Breakdown Grid */}
+             <div className="mt-6 grid grid-cols-4 gap-4 pt-4 border-t border-slate-100">
+                <div>
+                    <span className="block text-[10px] uppercase tracking-wide text-slate-400">Fixed COGS</span>
+                    <span className="font-mono text-sm font-bold text-slate-700">$4.34</span>
+                </div>
+                <div>
+                    <span className="block text-[10px] uppercase tracking-wide text-slate-400">Marketing</span>
+                    <span className="font-mono text-sm font-bold text-slate-700">${financials.marketing.toFixed(2)}</span>
+                </div>
+                <div>
+                    <span className="block text-[10px] uppercase tracking-wide text-slate-400">Brand Royalty</span>
+                    <div className="flex flex-col">
+                        <span className="font-mono text-sm font-bold text-amber-600">${financials.royalty.total.toFixed(2)}</span>
+                        <span className="text-[9px] text-amber-600/70">(${financials.royalty.base.toFixed(2)} Base + ${financials.royalty.additional.toFixed(2)} Add'l)</span>
+                    </div>
+                </div>
+                <div>
+                    <span className="block text-[10px] uppercase tracking-wide text-slate-400">Total Cost</span>
+                    <span className="font-mono text-sm font-bold text-slate-900">${financials.totalCost.toFixed(2)}</span>
+                </div>
+             </div>
+
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-1 flex flex-col">
@@ -300,8 +323,8 @@ export const ScenarioBuilder: React.FC = () => {
                     <p className="text-slate-400 text-sm">Revenue vs. Profit Analysis</p>
                 </div>
                 <div className="flex space-x-4 text-xs font-medium">
-                    <div className="flex items-center"><span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Revenue</div>
-                    <div className="flex items-center"><span className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></span> Profit</div>
+                    <div className="flex items-center"><span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Manufacturer Revenue</div>
+                    <div className="flex items-center"><span className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></span> Net Profit</div>
                 </div>
              </div>
              
@@ -326,7 +349,7 @@ export const ScenarioBuilder: React.FC = () => {
                 <div className="p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-100">
                     <p className="text-xs text-emerald-700 uppercase font-bold tracking-wider">Incremental Profit</p>
                     <p className="text-3xl font-bold text-emerald-800 mt-2">{promoProfit - slottingFees > 0 ? '+' : ''}{formatCurrency(promoProfit - slottingFees)}</p>
-                    <p className="text-xs text-emerald-600 mt-1 opacity-80">Net impact (after fees & royalties)</p>
+                    <p className="text-xs text-emerald-600 mt-1 opacity-80">Bernatello's bottom line impact</p>
                 </div>
                 <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-100">
                     <p className="text-xs text-blue-700 uppercase font-bold tracking-wider">Total Revenue Lift</p>
@@ -352,6 +375,10 @@ export const ScenarioBuilder: React.FC = () => {
                   <div>
                       <span className="text-slate-500 block text-xs uppercase tracking-wider">Target MSRP</span>
                       <span className="font-mono text-lg">${customMSRP.toFixed(2)}</span>
+                  </div>
+                  <div>
+                      <span className="text-slate-500 block text-xs uppercase tracking-wider">Target ASP</span>
+                      <span className="font-mono text-lg">${customASP.toFixed(2)}</span>
                   </div>
                   <div className={`bg-slate-800 px-4 py-1 rounded-lg border ${isMarginCompliant ? 'border-emerald-500/50' : 'border-red-500/50'}`}>
                       <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Retailer Margin %</span>

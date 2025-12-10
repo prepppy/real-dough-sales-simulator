@@ -3,13 +3,12 @@ export interface Product {
   name: string;
   wholesalePrice: number;
   msrp: number;
-  cogs: number; // Cost of Goods Sold
+  cogs: number; // Now Fixed at $4.34 generally, but keep flexible
   caseCount: number;
   casesPerPallet: number;
-  defaultRoyaltyRate: number; // New: Percentage paid to brand/IP holder
 }
 
-export type RetailerChannel = 'DSD' | 'National Account';
+export type RetailerChannel = 'DSD' | 'Warehouse' | 'National Account'; // Updated 'Warehouse' based on new docs
 
 export interface Retailer {
   id: string;
@@ -28,7 +27,7 @@ export interface Store {
   lng: number;
   state: string;
   currentSkuCount: number;
-  baseVelocity: number; // Units per store per week (UPSPW)
+  baseVelocity: number; 
 }
 
 export interface Scenario {
@@ -43,11 +42,18 @@ export interface Scenario {
   incrementalRevenue: number;
   incrementalProfit: number;
   // Custom Pricing Overrides
-  customWholesalePrice?: number;
+  customWholesalePrice?: number; // ASP (Average Selling Price) to Retailer
   customMSRP?: number;
-  customCOGS?: number;
+  customCOGS?: number; // $4.34 Fixed
   slottingFees?: number;
-  royaltyRate?: number; // New
+  royaltyRate?: number; // Deprecated in favor of calculated Amount
+  
+  // New Fields for Detailed Analysis
+  calculatedMarketing?: number; // 5% of ASP
+  calculatedBaseRoyalty?: number; // Fixed $0.50
+  calculatedAddlRoyalty?: number; // Variable
+  calculatedNetMarginDollars?: number;
+  calculatedNetMarginPercent?: number;
 }
 
 export interface GlobalState {
