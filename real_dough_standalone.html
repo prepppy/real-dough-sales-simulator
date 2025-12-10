@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Dough Sales Simulator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+       /* Custom scrollbar */
+       .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+       .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+       .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+       .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #aaa; }
+       
+       /* Map container fix */
+       .leaflet-container {
+           width: 100%;
+           height: 100%;
+           border-radius: 0.75rem;
+       }
+    </style>
+
+    <!-- Import Map to handle module imports from CDNs -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
+            "lucide-react": "https://esm.sh/lucide-react@0.378.0?external=react",
+            "leaflet": "https://esm.sh/leaflet@1.9.4",
+            "react-leaflet": "https://esm.sh/react-leaflet@4.2.1?external=react,react-dom,leaflet",
+            "html2canvas": "https://esm.sh/html2canvas",
+            "jspdf": "https://esm.sh/jspdf"
+        }
+    }
+    </script>
+</head>
+<body class="bg-stone-100 text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
+        import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, TrendingUp, DollarSign, Package, Search, Save, ArrowRight } from 'lucide-react';
+        import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker, useMap } from 'react-leaflet';
+        import L from 'leaflet';
+        import html2canvas from 'html2canvas';
+        import { jsPDF } from 'jspdf';
+
+        // --- CONSTANTS & MOCK DATA ---
+
+        const PRODUCTS = [
+            { id: 'p1', name: 'Wisco Kid', wholesalePrice: 4.50, msrp: 7.99, caseCount: 12, casesPerPallet: 60 },
+            { id: 'p2', name: 'Peppin\' Ain\'t Easy', wholesalePrice: 5.00, msrp: 8.99, caseCount: 12, casesPerPallet: 60 },
+            { id: 'p3', name: 'Lost in the Sausage', wholesalePrice: 5.50, msrp: 9.49, caseCount: 12, casesPerPallet: 60 },
+            { id: 'p4', name: 'Curd Your Enthusiasm', wholesalePrice: 5.75, msrp: 9.99, caseCount: 12, casesPerPallet: 60 },
+            { id: 'p5', name: 'Okie Dokie Artichokie', wholesalePrice: 6.00, msrp: 10.99, caseCount: 10, casesPerPallet: 80 },
+        ];
+
+        const RETAILERS = [
+            { id: 'r_hyvee', name: 'Hy-Vee', channel: 'DSD', marginRequirement: 0.32, paymentTerms: 'Net 30', regionFocus: 'MIDWEST' },
+            { id: 'r_meijer', name: 'Meijer', channel: 'DSD', marginRequirement: 0.34, paymentTerms: 'Net 45', regionFocus: 'MIDWEST_EAST' },
+            { id: 'r_cashwise', name: 'Cash Wise', channel: 'DSD', marginRequirement: 0.30, paymentTerms: 'Net 15', regionFocus: 'UPPER_MIDWEST' },
+            { id: 'r_woodmans', name: 'Woodman\'s', channel: 'DSD', marginRequirement: 0.28, paymentTerms: 'Net 15', regionFocus: 'WI_IL' },
+            { id: 'r_festival', name: 'Festival Foods', channel: 'DSD', marginRequirement: 0.30, paymentTerms: 'Net 30', regionFocus: 'WI' },
+            { id: 'r_sprouts', name: 'Sprouts', channel: 'National Account', marginRequirement: 0.38, paymentTerms: 'Net 60', regionFocus: 'NATIONAL_SCATTERED' },
+            { id: 'r_ht', name: 'Harris Teeter', channel: 'National Account', marginRequirement: 0.36, paymentTerms: 'Net 45', regionFocus: 'MID_ATLANTIC' },
+            { id: 'r_publix', name: 'Publix', channel: 'National Account', marginRequirement: 0.35, paymentTerms: 'Net 30', regionFocus: 'SOUTHEAST' },
+            { id: 'r_costco', name: 'Costco', channel: 'National Account', marginRequirement: 0.14, paymentTerms: 'Net 30', regionFocus: 'NATIONAL_URBAN' },
+        ];
+
+        const REGIONS = {
+            MIDWEST: { latMin: 39, latMax: 43, lngMin: -96, lngMax: -90, states: ['IA', 'MO', 'IL', 'NE'] },
+            MIDWEST_EAST: { latMin: 39, latMax: 44, lngMin: -88, lngMax: -83, states: ['MI', 'OH', 'IN', 'IL'] },
+            UPPER_MIDWEST: { latMin: 44, latMax: 48, lngMin: -100, lngMax: -93, states: ['MN', 'ND', 'SD'] },
+            WI_IL: { latMin: 42, latMax: 45, lngMin: -90, lngMax: -87, states: ['WI', 'IL'] },
+            WI: { latMin: 43, latMax: 46, lngMin: -91, lngMax: -87, states: ['WI'] },
+            MID_ATLANTIC: { latMin: 35, latMax: 39, lngMin: -81, lngMax: -76, states: ['NC', 'VA', 'MD'] },
+            SOUTHEAST: { latMin: 26, latMax: 34, lngMin: -85, lngMax: -80, states: ['FL', 'GA', 'AL'] },
+            NATIONAL_SCATTERED: { latMin: 30, latMax: 45, lngMin: -120, lngMax: -75, states: ['CA', 'TX', 'CO', 'AZ', 'GA'] },
+            NATIONAL_URBAN: { latMin: 30, latMax: 45, lngMin: -118, lngMax: -74, states: ['CA', 'NY', 'IL', 'WA', 'TX'] },
+        };
+
+        const generateStores = () => {
+            const stores = [];
+            let idCounter = 0;
+
+            RETAILERS.forEach(retailer => {
+                let count = 50; 
+                if (retailer.name === 'Hy-Vee') count = 150; // Reduced slightly for single file perf
+                if (retailer.name === 'Meijer') count = 120;
+                if (retailer.name === 'Cash Wise') count = 17;
+                if (retailer.name === 'Woodman\'s') count = 19;
+                if (retailer.name === 'Festival Foods') count = 40;
+                if (retailer.name === 'Sprouts') count = 80; 
+                if (retailer.name === 'Harris Teeter') count = 60; 
+                if (retailer.name === 'Publix') count = 150; 
+                if (retailer.name === 'Costco') count = 80; 
+
+                const region = REGIONS[retailer.regionFocus];
+                
+                for (let i = 0; i < count; i++) {
+                    idCounter++;
+                    const lat = region.latMin + (Math.random() * (region.latMax - region.latMin));
+                    const lng = region.lngMin + (Math.random() * (region.lngMax - region.lngMin));
+                    const state = region.states[Math.floor(Math.random() * region.states.length)];
+                    let baseVel = Math.random() * 15 + 5;
+                    if (retailer.name === 'Costco') baseVel = Math.random() * 40 + 20;
+                    if (retailer.name === 'Woodman\'s') baseVel = Math.random() * 25 + 10;
+                    let skus = Math.floor(Math.random() * 5) + 1; 
+                    if (retailer.name === 'Costco') skus = 1; 
+                    
+                    stores.push({
+                        id: `s_${idCounter}`,
+                        retailerId: retailer.id,
+                        name: `${retailer.name} #${Math.floor(Math.random() * 900) + 100}`,
+                        lat,
+                        lng,
+                        state,
+                        currentSkuCount: skus,
+                        baseVelocity: baseVel, 
+                    });
+                }
+            });
+            return stores;
+        };
+
+        const STORES = generateStores();
+
+        // --- CONTEXT ---
+
+        const SimulationContext = createContext(undefined);
+
+        const SimulationProvider = ({ children }) => {
+            const [products] = useState(PRODUCTS);
+            const [retailers] = useState(RETAILERS);
+            const [stores, setStores] = useState(STORES);
+            const [scenarios, setScenarios] = useState([]);
+            const [globalState, setGlobalState] = useState({
+                selectedChannel: 'ALL',
+                selectedState: 'ALL',
+                selectedRetailer: 'ALL',
+                mapMode: 'PINS',
+            });
+
+            const getRetailerChannel = (retailerId) => {
+                return retailers.find(r => r.id === retailerId)?.channel || 'National Account';
+            };
+
+            const filteredStores = useMemo(() => {
+                return stores.filter(store => {
+                    if (globalState.selectedState !== 'ALL' && store.state !== globalState.selectedState) return false;
+                    if (globalState.selectedRetailer !== 'ALL' && store.retailerId !== globalState.selectedRetailer) return false;
+                    if (globalState.selectedChannel !== 'ALL') {
+                        const channel = getRetailerChannel(store.retailerId);
+                        if (channel !== globalState.selectedChannel) return false;
+                    }
+                    return true;
+                });
+            }, [stores, globalState, retailers]);
+
+            const setFilter = (key, value) => setGlobalState(prev => ({ ...prev, [key]: value }));
+            const updateStore = (storeId, updates) => setStores(prev => prev.map(s => s.id === storeId ? { ...s, ...updates } : s));
+            const addScenario = (scenario) => setScenarios(prev => [...prev, scenario]);
+            const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+
+            return (
+                <SimulationContext.Provider value={{
+                    products, retailers, stores, filteredStores, state: globalState, scenarios,
+                    setFilter, updateStore, addScenario, formatCurrency, getRetailerChannel
+                }}>
+                    {children}
+                </SimulationContext.Provider>
+            );
+        };
+
+        const useSimulation = () => {
+            const context = useContext(SimulationContext);
+            if (!context) throw new Error('useSimulation must be used within a SimulationProvider');
+            return context;
+        };
+
+        // --- COMPONENTS ---
+
+        // 1. Dashboard
+        const StatCard = ({ title, value, subtext, icon, color }) => (
+            <div className={`bg-white p-6 rounded-xl shadow-sm border-l-4 ${color}`}>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
+                        <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
+                        <p className="text-xs text-slate-400 mt-1">{subtext}</p>
+                    </div>
+                    <div className="p-2 bg-stone-50 rounded-lg text-slate-600">{icon}</div>
+                </div>
+            </div>
+        );
+
+        const Dashboard = () => {
+            const { filteredStores, formatCurrency, products, getRetailerChannel } = useSimulation();
+            const totalStores = filteredStores.length;
+            const calculateRevenue = (velocity, skuCount) => {
+                const avgPrice = products.reduce((acc, p) => acc + p.wholesalePrice, 0) / products.length;
+                return velocity * skuCount * avgPrice * 52; 
+            };
+            const totalRevenue = filteredStores.reduce((acc, store) => acc + calculateRevenue(store.baseVelocity, store.currentSkuCount), 0);
+            const avgVelocity = filteredStores.length > 0 ? filteredStores.reduce((acc, s) => acc + s.baseVelocity, 0) / filteredStores.length : 0;
+            const channelData = filteredStores.reduce((acc, store) => {
+                const channel = getRetailerChannel(store.retailerId);
+                acc[channel] = (acc[channel] || 0) + calculateRevenue(store.baseVelocity, store.currentSkuCount);
+                return acc;
+            }, { 'DSD': 0, 'National Account': 0 });
+            const pieData = [{ name: 'DSD', value: channelData['DSD'] }, { name: 'National Accounts', value: channelData['National Account'] }];
+            const revenueByRetailer = filteredStores.reduce((acc, store) => {
+                const rev = calculateRevenue(store.baseVelocity, store.currentSkuCount);
+                const retailerName = store.name.split(' #')[0]; 
+                acc[retailerName] = (acc[retailerName] || 0) + rev;
+                return acc;
+            }, {});
+            const barChartData = Object.entries(revenueByRetailer).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-bold text-slate-800">Sales Performance Overview</h2>
+                        <span className="text-sm font-medium px-3 py-1 bg-white border rounded-full text-slate-500 shadow-sm">Wholesale Revenue View</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard title="Total Wholesale Revenue" value={formatCurrency(totalRevenue)} subtext="Projected annualized run-rate" icon={<DollarSign size={20} />} color="border-red-600" />
+                        <StatCard title="Active Store Count" value={totalStores.toLocaleString()} subtext="Filtered Territory" icon={<StoreIcon size={20} />} color="border-blue-600" />
+                        <StatCard title="Avg. Velocity (UPSPW)" value={avgVelocity.toFixed(1)} subtext="Units Per Store Per Week" icon={<TrendingUp size={20} />} color="border-yellow-500" />
+                        <StatCard title="DSD Contribution" value={pieData[0].value > 0 ? ((pieData[0].value / totalRevenue) * 100).toFixed(0) + '%' : '0%'} subtext="Of total revenue" icon={<Package size={20} />} color="border-green-500" />
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4">Revenue by Retailer</h3>
+                            <div className="h-72 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={barChartData} layout="vertical" margin={{ left: 20 }}>
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                        <XAxis type="number" hide />
+                                        <YAxis dataKey="name" type="category" width={100} tick={{fontSize: 12}} />
+                                        <Tooltip formatter={(value) => formatCurrency(value)} cursor={{fill: '#f5f5f5'}} />
+                                        <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                                            {barChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#D32F2F' : '#374151'} />)}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4">Channel Mix</h3>
+                            <div className="flex-1 min-h-[250px] relative">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                                            <Cell key="DSD" fill="#D32F2F" />
+                                            <Cell key="National" fill="#1D4ED8" />
+                                        </Pie>
+                                        <Tooltip formatter={(value) => formatCurrency(value)} />
+                                        <Legend verticalAlign="bottom" height={36}/>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="text-center">
+                                        <p className="text-xs text-slate-400 font-medium uppercase">Total</p>
+                                        <p className="font-bold text-slate-800">{formatCurrency(totalRevenue)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 className="text-lg font-bold text-slate-800 mb-4">High Velocity Stores (Top 5)</h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-stone-50 text-slate-500 font-medium">
+                                    <tr>
+                                        <th className="p-3">Store</th><th className="p-3">Channel</th><th className="p-3">Region</th><th className="p-3 text-right">Velocity</th><th className="p-3 text-right">Est. Annual Rev</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredStores.sort((a,b) => b.baseVelocity - a.baseVelocity).slice(0, 5).map(store => (
+                                        <tr key={store.id} className="hover:bg-slate-50">
+                                            <td className="p-3 font-medium text-slate-800">{store.name}</td>
+                                            <td className="p-3"><span className={`px-2 py-1 rounded text-xs font-bold ${getRetailerChannel(store.retailerId) === 'DSD' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{getRetailerChannel(store.retailerId)}</span></td>
+                                            <td className="p-3 text-slate-500">{store.state}</td>
+                                            <td className="p-3 text-right font-bold text-slate-700">{store.baseVelocity.toFixed(1)}</td>
+                                            <td className="p-3 text-right text-slate-600">{formatCurrency(calculateRevenue(store.baseVelocity, store.currentSkuCount))}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. Map Panel
+        const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+        const iconShadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+        let DefaultIcon = L.icon({ iconUrl, shadowUrl: iconShadowUrl, iconSize: [25, 41], iconAnchor: [12, 41] });
+        L.Marker.prototype.options.icon = DefaultIcon;
+        const dsdIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+        const nationalIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+
+        const getDistanceFromLatLonInMiles = (lat1, lon1, lat2, lon2) => {
+            var R = 3958.8; var dLat = (lat2-lat1) * (Math.PI/180); var dLon = (lon2-lon1) * (Math.PI/180); 
+            var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; 
+        };
+
+        const TAMCalculator = ({ center, radius, stores, onCalculate }) => {
+            useEffect(() => {
+                if (!center) return;
+                let totalRev = 0; let count = 0;
+                stores.forEach(store => {
+                    const dist = getDistanceFromLatLonInMiles(center[0], center[1], store.lat, store.lng);
+                    if (dist <= radius) { totalRev += (store.baseVelocity * store.currentSkuCount * 4.50 * 52); count++; }
+                });
+                onCalculate(totalRev, count);
+            }, [center, radius, stores]); 
+            if (!center) return null;
+            return <Circle center={center} radius={radius * 1609.34} pathOptions={{ color: 'red', fillColor: '#fca5a5', fillOpacity: 0.2 }} />;
+        };
+
+        const MapEvents = ({ onMapClick }) => {
+            const map = useMap();
+            useEffect(() => { map.on('click', onMapClick); return () => { map.off('click', onMapClick); } }, [map, onMapClick]);
+            return null;
+        };
+
+        const MapPanel = () => {
+            const { filteredStores, state, formatCurrency, getRetailerChannel } = useSimulation();
+            const [activeCenter, setActiveCenter] = useState(null);
+            const [radiusMode, setRadiusMode] = useState(false);
+            const [tamValue, setTamValue] = useState(0);
+            const [tamCount, setTamCount] = useState(0);
+            
+            const handleMapClick = (e) => { if (radiusMode) setActiveCenter([e.latlng.lat, e.latlng.lng]); };
+
+            return (
+                <div className="relative w-full h-full min-h-[500px] rounded-xl overflow-hidden shadow-lg border border-slate-200">
+                    <div className="absolute top-4 right-4 z-[500] bg-white/90 backdrop-blur p-3 rounded-lg shadow-md flex flex-col gap-3 max-w-[200px]">
+                        <div className="space-y-1">
+                            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-red-600"></div><span className="text-xs text-slate-700 font-medium">DSD Accounts</span></div>
+                            <div className="flex items-center space-x-2"><div className="w-3 h-3 rounded-full bg-blue-600"></div><span className="text-xs text-slate-700 font-medium">National Accounts</span></div>
+                        </div>
+                        <hr className="border-slate-200" />
+                        <button onClick={() => setRadiusMode(!radiusMode)} className={`px-3 py-1.5 text-xs font-bold rounded shadow-sm transition-colors ${radiusMode ? 'bg-slate-800 text-white' : 'bg-white border border-slate-300 text-slate-600 hover:bg-stone-50'}`}>{radiusMode ? 'Click Map to set Center' : 'Radius Tool (50mi)'}</button>
+                        {radiusMode && activeCenter && (
+                            <div className="p-2 bg-stone-50 rounded border border-stone-200 text-xs text-slate-700">
+                                <p className="font-bold">50 Mile TAM Analysis</p><p>Stores: <span className="font-mono">{tamCount}</span></p><p className="text-green-600 font-bold">{formatCurrency(tamValue)}</p>
+                            </div>
+                        )}
+                    </div>
+                    <MapContainer center={[39.8283, -98.5795]} zoom={5} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                        <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <MapEvents onMapClick={handleMapClick} />
+                        <TAMCalculator center={activeCenter} radius={50} stores={filteredStores} onCalculate={(val, count) => { setTamValue(val); setTamCount(count); }} />
+                        {state.mapMode === 'PINS' ? (
+                            filteredStores.map(store => {
+                                const channel = getRetailerChannel(store.retailerId);
+                                return (
+                                    <Marker key={store.id} position={[store.lat, store.lng]} icon={channel === 'DSD' ? dsdIcon : nationalIcon}>
+                                        <Popup>
+                                            <div className="p-1 min-w-[150px]">
+                                                <h3 className="font-bold text-slate-800 text-sm">{store.name}</h3>
+                                                <div className="flex items-center space-x-2 mt-1 mb-2"><span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${channel === 'DSD' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{channel}</span><span className="text-xs text-slate-500">{store.state}</span></div>
+                                                <div className="grid grid-cols-2 gap-2 text-xs bg-stone-50 p-2 rounded"><div><p className="text-slate-400">Velocity</p><p className="font-bold">{store.baseVelocity.toFixed(1)}</p></div><div><p className="text-slate-400">SKUs</p><p className="font-bold">{store.currentSkuCount}</p></div></div>
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                );
+                            })
+                        ) : (
+                            filteredStores.map(store => {
+                                const intensity = Math.min(store.baseVelocity / 30, 1); 
+                                const channel = getRetailerChannel(store.retailerId);
+                                return <CircleMarker key={store.id} center={[store.lat, store.lng]} radius={6 + (intensity * 10)} pathOptions={{ color: 'transparent', fillColor: channel === 'DSD' ? '#D32F2F' : '#2563EB', fillOpacity: 0.5 }}><Popup>{store.name}: {store.baseVelocity.toFixed(1)} UPSPW</Popup></CircleMarker>
+                            })
+                        )}
+                    </MapContainer>
+                </div>
+            );
+        };
+
+        // 3. Scenario Builder
+        const ScenarioBuilder = () => {
+            const { products, retailers, addScenario, formatCurrency, getRetailerChannel } = useSimulation();
+            const [selectedRetailer, setSelectedRetailer] = useState(retailers[0].id);
+            const [selectedProduct, setSelectedProduct] = useState(products[0].id);
+            const [targetStoreCount, setTargetStoreCount] = useState(50);
+            const [promoWeeks, setPromoWeeks] = useState(4);
+            const [promoLift, setPromoLift] = useState(40); 
+            const [scenarioName, setScenarioName] = useState('Q3 Pitch Scenario');
+
+            const currentRetailer = retailers.find(r => r.id === selectedRetailer);
+            const currentProduct = products.find(p => p.id === selectedProduct);
+            const estimatedBaseVelocity = 12; 
+            const wholesalePrice = currentProduct?.wholesalePrice || 0;
+            const annualBaseRevenue = estimatedBaseVelocity * targetStoreCount * wholesalePrice * 52;
+            const promoRevenue = (estimatedBaseVelocity * targetStoreCount * wholesalePrice * promoWeeks * (promoLift / 100));
+            const newAnnualRevenue = annualBaseRevenue + promoRevenue;
+            const liftPercentage = annualBaseRevenue > 0 ? ((newAnnualRevenue - annualBaseRevenue) / annualBaseRevenue) * 100 : 0;
+            const data = [{ name: 'Baseline', Revenue: annualBaseRevenue }, { name: 'With Promo', Revenue: newAnnualRevenue }];
+
+            const handleSave = () => {
+                addScenario({ id: Date.now().toString(), name: scenarioName, description: `Pitch to ${currentRetailer?.name}`, targetRetailerId: selectedRetailer, targetProductIds: [selectedProduct], storeCount: targetStoreCount, promoWeeks, promoLiftMultiplier: 1 + (promoLift/100), incrementalRevenue: promoRevenue });
+                alert('Scenario Saved!');
+            };
+            const channel = currentRetailer ? getRetailerChannel(currentRetailer.id) : '';
+
+            return (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+                    <div className="lg:col-span-5 bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-y-auto custom-scrollbar">
+                        <div className="flex items-center space-x-2 mb-6"><Calculator className="text-red-600" /><h2 className="text-xl font-bold text-slate-800">Scenario Builder</h2></div>
+                        <div className="space-y-5">
+                            <div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Scenario Name</label><input type="text" value={scenarioName} onChange={(e) => setScenarioName(e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none" /></div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Retailer</label><select value={selectedRetailer} onChange={(e) => setSelectedRetailer(e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white">{retailers.map(r => <option key={r.id} value={r.id}>{r.name} ({r.channel})</option>)}</select></div>
+                                <div><label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Product</label><select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white">{products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+                            </div>
+                            <div className={`p-3 rounded border text-xs ${channel === 'DSD' ? 'bg-red-50 border-red-100 text-red-800' : 'bg-blue-50 border-blue-100 text-blue-800'}`}><span className="font-bold">Account Type: {channel}</span><span className="mx-2">•</span><span>Margin Req: {(currentRetailer?.marginRequirement || 0) * 100}%</span></div>
+                            <div className="p-5 bg-stone-50 rounded-xl space-y-6 border border-stone-200">
+                                <h3 className="font-bold text-slate-700 text-sm flex items-center"><TrendingUp size={16} className="mr-2" /> Variables</h3>
+                                <div><div className="flex justify-between text-xs mb-2"><span className="text-slate-600">Store Count</span><span className="font-bold text-slate-800">{targetStoreCount}</span></div><input type="range" min="10" max="500" step="10" value={targetStoreCount} onChange={(e) => setTargetStoreCount(parseInt(e.target.value))} className="w-full accent-red-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>
+                                <div><div className="flex justify-between text-xs mb-2"><span className="text-slate-600">Promo Duration</span><span className="font-bold text-slate-800">{promoWeeks} weeks</span></div><input type="range" min="0" max="12" step="1" value={promoWeeks} onChange={(e) => setPromoWeeks(parseInt(e.target.value))} className="w-full accent-red-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>
+                                <div><div className="flex justify-between text-xs mb-2"><span className="text-slate-600">Est. Lift %</span><span className="font-bold text-slate-800">{promoLift}%</span></div><input type="range" min="0" max="200" step="5" value={promoLift} onChange={(e) => setPromoLift(parseInt(e.target.value))} className="w-full accent-red-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>
+                            </div>
+                            <button onClick={handleSave} className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-lg shadow-slate-200"><Save size={18} /><span>Save Scenario</span></button>
+                        </div>
+                    </div>
+                    <div className="lg:col-span-7 flex flex-col space-y-6">
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col">
+                             <h3 className="font-bold text-slate-800 mb-6">Financial Impact Projection</h3>
+                             <div className="flex-1 w-full min-h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={data} barSize={80}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                        <XAxis dataKey="name" tick={{fontSize: 14, fontWeight: 500}} axisLine={false} tickLine={false} dy={10} />
+                                        <YAxis tickFormatter={(val) => `$${val/1000}k`} axisLine={false} tickLine={false} />
+                                        <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} formatter={(val) => [formatCurrency(val), 'Revenue']} />
+                                        <Bar dataKey="Revenue" fill="#D32F2F" radius={[6, 6, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                             </div>
+                             <div className="grid grid-cols-2 gap-4 mt-6">
+                                <div className="p-4 bg-stone-50 rounded-lg border border-stone-100"><p className="text-xs text-slate-500 uppercase font-bold">Incremental Rev</p><p className="text-2xl font-bold text-green-600 mt-1">+{formatCurrency(promoRevenue)}</p></div>
+                                <div className="p-4 bg-stone-50 rounded-lg border border-stone-100"><p className="text-xs text-slate-500 uppercase font-bold">Total Lift</p><div className="flex items-center text-slate-800 mt-1"><ArrowRight size={20} className="text-green-500 mr-2" /><span className="text-2xl font-bold">{liftPercentage.toFixed(1)}%</span></div></div>
+                             </div>
+                        </div>
+                        <div className="bg-slate-800 text-white p-4 rounded-xl shadow-sm">
+                            <div className="flex justify-between items-center mb-2"><h4 className="font-bold text-sm">Quick Margin Check</h4><span className="text-xs text-slate-400">For Buyer Conversations</span></div>
+                            <div className="flex justify-between text-sm">
+                                <div><span className="text-slate-400 block text-xs">Wholesale</span><span className="font-mono">${currentProduct?.wholesalePrice.toFixed(2)}</span></div>
+                                <div><span className="text-slate-400 block text-xs">MSRP</span><span className="font-mono">${currentProduct?.msrp.toFixed(2)}</span></div>
+                                <div><span className="text-slate-400 block text-xs">Retailer Margin</span><span className="font-bold text-green-400">{((1 - (currentProduct?.wholesalePrice || 0) / (currentProduct?.msrp || 1)) * 100).toFixed(1)}%</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. Retailer Table
+        const RetailerTable = () => {
+            const { filteredStores, updateStore, formatCurrency, getRetailerChannel, products } = useSimulation();
+            const [searchTerm, setSearchTerm] = useState('');
+            const [editId, setEditId] = useState(null);
+            const [editVal, setEditVal] = useState(0);
+
+            const handleEditClick = (store) => { setEditId(store.id); setEditVal(store.currentSkuCount); };
+            const handleSave = (storeId) => { updateStore(storeId, { currentSkuCount: editVal }); setEditId(null); };
+            const tableData = filteredStores.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.state.toLowerCase().includes(searchTerm.toLowerCase()));
+            const getEstRev = (store) => { const avgPrice = products.reduce((acc, p) => acc + p.wholesalePrice, 0) / products.length; return store.baseVelocity * store.currentSkuCount * avgPrice * 52; };
+
+            return (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
+                    <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-stone-50">
+                        <h3 className="font-bold text-slate-800">Account Detail List</h3>
+                        <div className="relative w-64"><Search className="absolute left-2 top-2.5 text-slate-400" size={16} /><input type="text" placeholder="Search accounts..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-8 pr-3 py-2 text-sm border border-slate-300 rounded-lg outline-none focus:border-red-500" /></div>
+                    </div>
+                    <div className="overflow-auto flex-1 custom-scrollbar">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-stone-100 text-slate-600 sticky top-0 z-10">
+                                <tr><th className="p-3 font-semibold">Store Name</th><th className="p-3 font-semibold">Channel</th><th className="p-3 font-semibold">State</th><th className="p-3 font-semibold">SKU Count</th><th className="p-3 font-semibold text-right">Velocity</th><th className="p-3 font-semibold text-right">Annual Wholesale</th></tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {tableData.slice(0, 100).map(store => {
+                                    const channel = getRetailerChannel(store.retailerId);
+                                    return (
+                                        <tr key={store.id} className="hover:bg-stone-50 transition-colors">
+                                            <td className="p-3 font-medium text-slate-800">{store.name}</td>
+                                            <td className="p-3"><span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${channel === 'DSD' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>{channel}</span></td>
+                                            <td className="p-3 text-slate-500">{store.state}</td>
+                                            <td className="p-3">{editId === store.id ? (<div className="flex items-center space-x-2"><input type="number" className="w-16 border rounded p-1" value={editVal} onChange={(e) => setEditVal(Number(e.target.value))} /><button onClick={() => handleSave(store.id)} className="text-green-600 text-xs font-bold">OK</button></div>) : (<span onClick={() => handleEditClick(store)} className="cursor-pointer border-b border-dashed border-slate-300 hover:text-red-600 hover:border-red-600" title="Click to Edit">{store.currentSkuCount}</span>)}</td>
+                                            <td className="p-3 text-right text-slate-600">{store.baseVelocity.toFixed(1)}</td>
+                                            <td className="p-3 text-right font-mono text-slate-700">{formatCurrency(getEstRev(store))}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // 5. Main Layout
+        const NavButton = ({ active, onClick, icon, label }) => (
+            <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active ? 'bg-red-700 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                {icon}<span className="hidden lg:block font-medium text-sm">{label}</span>
+            </button>
+        );
+
+        const App = () => {
+            const { state, setFilter, scenarios, filteredStores } = useSimulation();
+            const [activeTab, setActiveTab] = useState('DASHBOARD');
+            const [isExporting, setIsExporting] = useState(false);
+
+            const handleExport = async () => {
+                setIsExporting(true);
+                const element = document.getElementById('app-content');
+                if (element) {
+                    try {
+                        const canvas = await html2canvas(element, { scale: 2 });
+                        const imgData = canvas.toDataURL('image/png');
+                        const pdf = new jsPDF('l', 'mm', 'a4');
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                        pdf.save('RealDough_OnePager.pdf');
+                    } catch (e) { console.error(e); alert('Export failed.'); }
+                }
+                setIsExporting(false);
+            };
+
+            return (
+                <div className="flex h-screen w-full font-sans text-slate-800 overflow-hidden">
+                    <aside className="w-20 lg:w-64 bg-slate-900 text-white flex flex-col flex-shrink-0 transition-all duration-300">
+                        <div className="p-6 flex items-center space-x-3 border-b border-slate-800">
+                            <div className="bg-red-600 p-2 rounded-lg"><Pizza size={24} className="text-white" /></div>
+                            <div className="hidden lg:block"><span className="font-bold text-lg tracking-tight block">Real Dough</span><span className="text-xs text-slate-400">Sales Simulator v1.2</span></div>
+                        </div>
+                        <nav className="flex-1 py-6 space-y-2 px-2">
+                            <NavButton active={activeTab === 'DASHBOARD'} onClick={() => setActiveTab('DASHBOARD')} icon={<LayoutDashboard size={20} />} label="Command Center" />
+                            <NavButton active={activeTab === 'MAP'} onClick={() => setActiveTab('MAP')} icon={<MapIcon size={20} />} label="Distribution Map" />
+                            <NavButton active={activeTab === 'SCENARIO'} onClick={() => setActiveTab('SCENARIO')} icon={<Calculator size={20} />} label="Scenario Builder" />
+                            <NavButton active={activeTab === 'TABLE'} onClick={() => setActiveTab('TABLE')} icon={<Table size={20} />} label="Store Data" />
+                        </nav>
+                        <div className="p-4 border-t border-slate-800"><div className="hidden lg:block bg-slate-800 rounded-lg p-3 text-xs text-slate-400"><p className="font-bold text-slate-300 mb-1">Saved Scenarios</p>{scenarios.length === 0 ? <p>No scenarios saved yet.</p> : <ul className="space-y-1">{scenarios.map(s => <li key={s.id} className="truncate">• {s.name}</li>)}</ul>}</div></div>
+                    </aside>
+                    <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+                        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0 z-20 shadow-sm">
+                            <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-2 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200">
+                                    <StoreIcon size={16} className="text-slate-500" /><span className="text-xs font-bold text-slate-400 uppercase mr-1">Channel:</span>
+                                    <div className="flex bg-stone-200 rounded p-0.5">
+                                        <button onClick={() => setFilter('selectedChannel', 'ALL')} className={`px-3 py-0.5 text-xs rounded transition-all ${state.selectedChannel === 'ALL' ? 'bg-white shadow text-slate-800 font-bold' : 'text-slate-500 hover:text-slate-700'}`}>All</button>
+                                        <button onClick={() => setFilter('selectedChannel', 'DSD')} className={`px-3 py-0.5 text-xs rounded transition-all ${state.selectedChannel === 'DSD' ? 'bg-white shadow text-red-700 font-bold' : 'text-slate-500 hover:text-slate-700'}`}>DSD</button>
+                                        <button onClick={() => setFilter('selectedChannel', 'National Account')} className={`px-3 py-0.5 text-xs rounded transition-all ${state.selectedChannel === 'National Account' ? 'bg-white shadow text-blue-700 font-bold' : 'text-slate-500 hover:text-slate-700'}`}>National</button>
+                                    </div>
+                                </div>
+                                <div className="h-6 w-px bg-slate-200 mx-2"></div>
+                                <div className="flex items-center space-x-2 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200">
+                                    <Filter size={16} className="text-slate-400" /><select className="bg-transparent text-sm font-medium outline-none text-slate-700" value={state.selectedState} onChange={(e) => setFilter('selectedState', e.target.value)}><option value="ALL">All Regions</option><option value="IL">Illinois</option><option value="WI">Wisconsin</option><option value="MN">Minnesota</option><option value="IA">Iowa</option><option value="MO">Missouri</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="NC">North Carolina</option><option value="CA">California</option><option value="TX">Texas</option></select>
+                                </div>
+                                <div className="hidden md:flex px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100">{filteredStores.length} Stores Active</div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                {activeTab === 'MAP' && (<div className="flex bg-stone-100 rounded-lg p-0.5 border border-stone-200"><button onClick={() => setFilter('mapMode', 'PINS')} className={`px-3 py-1.5 text-xs rounded transition-all ${state.mapMode === 'PINS' ? 'bg-white shadow text-slate-800 font-bold' : 'text-slate-500'}`}>Pins</button><button onClick={() => setFilter('mapMode', 'HEATMAP')} className={`px-3 py-1.5 text-xs rounded transition-all ${state.mapMode === 'HEATMAP' ? 'bg-white shadow text-slate-800 font-bold' : 'text-slate-500'}`}>Heatmap</button></div>)}
+                                <button onClick={handleExport} disabled={isExporting} className="flex items-center space-x-2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors shadow-sm"><Download size={16} /><span className="hidden md:inline">{isExporting ? 'Generating...' : 'Export PDF'}</span></button>
+                            </div>
+                        </header>
+                        <div id="app-content" className="flex-1 overflow-auto bg-stone-50 p-6 custom-scrollbar">
+                            {activeTab === 'DASHBOARD' && <Dashboard />}
+                            {activeTab === 'MAP' && <MapPanel />}
+                            {activeTab === 'SCENARIO' && <ScenarioBuilder />}
+                            {activeTab === 'TABLE' && <RetailerTable />}
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const Main = () => (
+            <SimulationProvider>
+                <App />
+            </SimulationProvider>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Main />);
+    </script>
+</body>
+</html>
