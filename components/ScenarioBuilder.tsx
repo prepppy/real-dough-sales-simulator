@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSimulation } from '../context/SimulationContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Calculator, Save, ArrowRight, TrendingUp, Info, DollarSign } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
+import { Calculator, Save, ArrowRight, TrendingUp, Info, DollarSign, Percent } from 'lucide-react';
 
 export const ScenarioBuilder: React.FC = () => {
   const { products, retailers, addScenario, formatCurrency, getRetailerChannel } = useSimulation();
@@ -18,6 +18,7 @@ export const ScenarioBuilder: React.FC = () => {
   const [customMSRP, setCustomMSRP] = useState<number>(0);
   const [customCOGS, setCustomCOGS] = useState<number>(0);
   const [slottingFees, setSlottingFees] = useState<number>(0);
+  const [royaltyRate, setRoyaltyRate] = useState<number>(5.0); // Default 5%
 
   const currentRetailer = retailers.find(r => r.id === selectedRetailer);
   const currentProduct = products.find(p => p.id === selectedProduct);
@@ -28,6 +29,7 @@ export const ScenarioBuilder: React.FC = () => {
         setCustomWholesale(currentProduct.wholesalePrice);
         setCustomMSRP(currentProduct.msrp);
         setCustomCOGS(currentProduct.cogs);
+        setRoyaltyRate((currentProduct.defaultRoyaltyRate || 0.05) * 100);
     }
   }, [currentProduct]);
 
@@ -36,7 +38,10 @@ export const ScenarioBuilder: React.FC = () => {
   
   // Use custom values for calculations
   const wholesalePrice = customWholesale;
-  const unitMargin = wholesalePrice - customCOGS;
+  const royaltyAmount = wholesalePrice * (royaltyRate / 100);
+  const unitMargin = wholesalePrice - customCOGS - royaltyAmount;
+  const retailerMarginAmt = customMSRP - customWholesale;
+  const retailerMarginPercent = customMSRP > 0 ? (retailerMarginAmt / customMSRP) * 100 : 0;
   
   // Revenue Calcs (Manufacturer Revenue)
   const annualBaseRevenue = estimatedBaseVelocity * targetStoreCount * wholesalePrice * 52;
@@ -44,9 +49,8 @@ export const ScenarioBuilder: React.FC = () => {
   const totalRevenue = annualBaseRevenue + promoRevenue;
 
   // Profit Calcs
-  const annualBaseProfit = (estimatedBaseVelocity * targetStoreCount * unitMargin * 52) - (slottingFees / 2); // Split slotting fees? or just subtract from total? Let's subtract from total net.
+  // Base Profit = Units * (Wholesale - COGS - Royalty)
   const annualBaseProfitRaw = estimatedBaseVelocity * targetStoreCount * unitMargin * 52;
-  
   const promoProfit = (estimatedBaseVelocity * targetStoreCount * unitMargin * promoWeeks * (promoLift / 100));
   
   // Net Profit = (Base Profit + Promo Profit) - Slotting Fees
@@ -55,14 +59,19 @@ export const ScenarioBuilder: React.FC = () => {
   // Lift
   const liftPercentage = annualBaseRevenue > 0 ? ((totalRevenue - annualBaseRevenue) / annualBaseRevenue) * 100 : 0;
 
-  // Retailer Margin Calculation
-  const retailerMargin = customMSRP > 0 ? ((customMSRP - customWholesale) / customMSRP) : 0;
-  const retailerMarginPercent = retailerMargin * 100;
-  const isMarginCompliant = currentRetailer && retailerMargin >= currentRetailer.marginRequirement;
+  const isMarginCompliant = currentRetailer && (retailerMarginPercent / 100) >= currentRetailer.marginRequirement;
 
   const data = [
-    { name: 'Baseline', Revenue: annualBaseRevenue, Profit: annualBaseProfitRaw }, // Baseline usually doesn't include one-off fees in visual comparison, or maybe it should? Let's keep raw for baseline to show lift clearly.
+    { name: 'Baseline', Revenue: annualBaseRevenue, Profit: annualBaseProfitRaw },
     { name: 'With Promo', Revenue: totalRevenue, Profit: totalProfit },
+  ];
+
+  // Unit Economics Waterfall Data
+  const unitEconomicsData = [
+    { name: 'COGS', value: customCOGS, fill: '#94a3b8' }, // Slate 400
+    { name: 'Royalty', value: royaltyAmount, fill: '#f59e0b' }, // Amber 500
+    { name: 'Distrib. Margin', value: unitMargin, fill: '#10b981' }, // Emerald 500
+    { name: 'Retailer Margin', value: retailerMarginAmt, fill: '#3b82f6' }, // Blue 500
   ];
 
   const handleSave = () => {
@@ -80,7 +89,8 @@ export const ScenarioBuilder: React.FC = () => {
         customWholesalePrice: customWholesale,
         customMSRP: customMSRP,
         customCOGS: customCOGS,
-        slottingFees: slottingFees
+        slottingFees: slottingFees,
+        royaltyRate: royaltyRate
     });
     alert('Scenario Saved!');
   };
@@ -95,7 +105,7 @@ export const ScenarioBuilder: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div className="flex items-center space-x-3 mb-6">
                 <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Calculator size={20} /></div>
-                <h2 className="text-xl font-bold text-slate-800">Configuration</h2>
+                <h2 className="text-xl font-bold text-slate-800">Unit Economics Config</h2>
             </div>
 
             <div className="space-y-6">
@@ -131,44 +141,33 @@ export const ScenarioBuilder: React.FC = () => {
                         </select>
                     </div>
                 </div>
-                
-                <div className={`p-4 rounded-xl border flex justify-between items-center text-sm ${channel === 'DSD' ? 'bg-rose-50 border-rose-100 text-rose-900' : 'bg-blue-50 border-blue-100 text-blue-900'}`}>
-                    <div className="flex flex-col">
-                        <span className="font-bold">{channel} Account</span>
-                        <span className="text-xs opacity-80">{currentRetailer?.paymentTerms}</span>
-                    </div>
-                    <div className="text-right">
-                        <span className="block font-bold text-lg">{(currentRetailer?.marginRequirement || 0) * 100}%</span>
-                        <span className="text-xs opacity-80">Req. Margin</span>
-                    </div>
-                </div>
 
                 {/* Pricing Inputs */}
                 <div className="space-y-4 pt-4 border-t border-slate-100">
                     <h3 className="text-sm font-bold text-slate-800 flex items-center">
-                        <DollarSign size={16} className="mr-1" /> Pricing & Costs
+                        <DollarSign size={16} className="mr-1" /> Pricing Structure
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Wholesale ($)</label>
-                            <input 
-                                type="number" step="0.01"
-                                value={customWholesale}
-                                onChange={(e) => setCustomWholesale(parseFloat(e.target.value) || 0)}
-                                className="w-full p-2 border border-slate-200 rounded-lg text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">MSRP ($)</label>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Retail Price (MSRP)</label>
                             <input 
                                 type="number" step="0.01"
                                 value={customMSRP}
                                 onChange={(e) => setCustomMSRP(parseFloat(e.target.value) || 0)}
-                                className="w-full p-2 border border-slate-200 rounded-lg text-sm"
+                                className="w-full p-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">COGS ($)</label>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Wholesale Price</label>
+                            <input 
+                                type="number" step="0.01"
+                                value={customWholesale}
+                                onChange={(e) => setCustomWholesale(parseFloat(e.target.value) || 0)}
+                                className="w-full p-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">COGS (Unit Cost)</label>
                             <input 
                                 type="number" step="0.01"
                                 value={customCOGS}
@@ -177,7 +176,16 @@ export const ScenarioBuilder: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Slotting Fees ($)</label>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Brand Royalty (%)</label>
+                            <input 
+                                type="number" step="0.5"
+                                value={royaltyRate}
+                                onChange={(e) => setRoyaltyRate(parseFloat(e.target.value) || 0)}
+                                className="w-full p-2 border border-slate-200 rounded-lg text-sm text-amber-600 font-medium"
+                            />
+                        </div>
+                        <div className="col-span-2">
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">One-Time Slotting Fees ($)</label>
                             <input 
                                 type="number" step="100"
                                 value={slottingFees}
@@ -248,6 +256,43 @@ export const ScenarioBuilder: React.FC = () => {
 
       {/* Visualization */}
       <div className="lg:col-span-7 flex flex-col gap-6">
+          
+          {/* Top Card: Unit Economics Breakdown */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+             <div className="flex justify-between items-start mb-4">
+                <div>
+                    <h3 className="font-bold text-slate-900 text-lg">Unit Economics</h3>
+                    <p className="text-slate-400 text-sm">Where every dollar of MSRP goes</p>
+                </div>
+                <div className="text-right">
+                    <p className="text-xs text-slate-500 uppercase tracking-wide font-bold">Distrib. Net Margin</p>
+                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(unitMargin)}</p>
+                </div>
+             </div>
+             
+             {/* Stacked Bar Visual for Unit Econ */}
+             <div className="relative h-16 w-full flex rounded-xl overflow-hidden font-bold text-white text-xs">
+                {unitEconomicsData.map((item, i) => {
+                    const pct = (item.value / customMSRP) * 100;
+                    return (
+                        <div key={item.name} style={{ width: `${pct}%`, backgroundColor: item.fill }} className="flex flex-col justify-center items-center h-full relative group">
+                            <span className="z-10 drop-shadow-md">${item.value.toFixed(2)}</span>
+                            {/* Tooltip on hover */}
+                            <div className="absolute -top-10 bg-slate-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                {item.name}: {pct.toFixed(1)}%
+                            </div>
+                        </div>
+                    )
+                })}
+             </div>
+             <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium px-1">
+                <div className="flex items-center"><div className="w-2 h-2 bg-slate-400 rounded-full mr-1"></div> COGS</div>
+                <div className="flex items-center"><div className="w-2 h-2 bg-amber-500 rounded-full mr-1"></div> Royalty</div>
+                <div className="flex items-center"><div className="w-2 h-2 bg-emerald-500 rounded-full mr-1"></div> Distributor</div>
+                <div className="flex items-center"><div className="w-2 h-2 bg-blue-500 rounded-full mr-1"></div> Retailer</div>
+             </div>
+          </div>
+
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-1 flex flex-col">
              <div className="flex justify-between items-start mb-6">
                 <div>
@@ -260,7 +305,7 @@ export const ScenarioBuilder: React.FC = () => {
                 </div>
              </div>
              
-             <div className="flex-1 w-full min-h-[350px]">
+             <div className="flex-1 w-full min-h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data} barSize={60}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -281,7 +326,7 @@ export const ScenarioBuilder: React.FC = () => {
                 <div className="p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-100">
                     <p className="text-xs text-emerald-700 uppercase font-bold tracking-wider">Incremental Profit</p>
                     <p className="text-3xl font-bold text-emerald-800 mt-2">{promoProfit - slottingFees > 0 ? '+' : ''}{formatCurrency(promoProfit - slottingFees)}</p>
-                    <p className="text-xs text-emerald-600 mt-1 opacity-80">Net impact (after fees)</p>
+                    <p className="text-xs text-emerald-600 mt-1 opacity-80">Net impact (after fees & royalties)</p>
                 </div>
                 <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-100">
                     <p className="text-xs text-blue-700 uppercase font-bold tracking-wider">Total Revenue Lift</p>
@@ -305,15 +350,11 @@ export const ScenarioBuilder: React.FC = () => {
              
              <div className="flex space-x-8 text-right">
                   <div>
-                      <span className="text-slate-500 block text-xs uppercase tracking-wider">Wholesale</span>
-                      <span className="font-mono text-lg">${customWholesale.toFixed(2)}</span>
-                  </div>
-                  <div>
-                      <span className="text-slate-500 block text-xs uppercase tracking-wider">MSRP</span>
+                      <span className="text-slate-500 block text-xs uppercase tracking-wider">Target MSRP</span>
                       <span className="font-mono text-lg">${customMSRP.toFixed(2)}</span>
                   </div>
                   <div className={`bg-slate-800 px-4 py-1 rounded-lg border ${isMarginCompliant ? 'border-emerald-500/50' : 'border-red-500/50'}`}>
-                      <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Margin %</span>
+                      <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Retailer Margin %</span>
                       <span className={`font-bold text-xl ${isMarginCompliant ? 'text-emerald-400' : 'text-red-400'}`}>
                         {retailerMarginPercent.toFixed(1)}%
                       </span>

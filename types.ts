@@ -6,6 +6,7 @@ export interface Product {
   cogs: number; // Cost of Goods Sold
   caseCount: number;
   casesPerPallet: number;
+  defaultRoyaltyRate: number; // New: Percentage paid to brand/IP holder
 }
 
 export type RetailerChannel = 'DSD' | 'National Account';
@@ -46,6 +47,7 @@ export interface Scenario {
   customMSRP?: number;
   customCOGS?: number;
   slottingFees?: number;
+  royaltyRate?: number; // New
 }
 
 export interface GlobalState {
@@ -53,6 +55,6 @@ export interface GlobalState {
   selectedState: string | 'ALL';
   selectedRetailer: string | 'ALL';
   mapMode: 'PINS' | 'HEATMAP';
-  metricMode: 'REVENUE' | 'PROFIT'; // New toggle
-  presentationMode: boolean; // New toggle
+  metricMode: 'REVENUE' | 'PROFIT'; 
+  presentationMode: boolean; 
 }

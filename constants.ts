@@ -2,11 +2,11 @@ import { Product, Retailer, Store } from './types';
 
 // Products with COGS added for Profitability Analysis
 export const PRODUCTS: Product[] = [
-  { id: 'p1', name: 'Wisco Kid', wholesalePrice: 4.50, msrp: 7.99, cogs: 2.10, caseCount: 12, casesPerPallet: 60 },
-  { id: 'p2', name: 'Peppin\' Ain\'t Easy', wholesalePrice: 5.00, msrp: 8.99, cogs: 2.25, caseCount: 12, casesPerPallet: 60 },
-  { id: 'p3', name: 'Lost in the Sausage', wholesalePrice: 5.50, msrp: 9.49, cogs: 2.60, caseCount: 12, casesPerPallet: 60 },
-  { id: 'p4', name: 'Curd Your Enthusiasm', wholesalePrice: 5.75, msrp: 9.99, cogs: 2.80, caseCount: 12, casesPerPallet: 60 },
-  { id: 'p5', name: 'Okie Dokie Artichokie', wholesalePrice: 6.00, msrp: 10.99, cogs: 3.10, caseCount: 10, casesPerPallet: 80 },
+  { id: 'p1', name: 'Wisco Kid', wholesalePrice: 4.50, msrp: 7.99, cogs: 2.10, caseCount: 12, casesPerPallet: 60, defaultRoyaltyRate: 0.05 },
+  { id: 'p2', name: 'Peppin\' Ain\'t Easy', wholesalePrice: 5.00, msrp: 8.99, cogs: 2.25, caseCount: 12, casesPerPallet: 60, defaultRoyaltyRate: 0.05 },
+  { id: 'p3', name: 'Lost in the Sausage', wholesalePrice: 5.50, msrp: 9.49, cogs: 2.60, caseCount: 12, casesPerPallet: 60, defaultRoyaltyRate: 0.05 },
+  { id: 'p4', name: 'Curd Your Enthusiasm', wholesalePrice: 5.75, msrp: 9.99, cogs: 2.80, caseCount: 12, casesPerPallet: 60, defaultRoyaltyRate: 0.05 },
+  { id: 'p5', name: 'Okie Dokie Artichokie', wholesalePrice: 6.00, msrp: 10.99, cogs: 3.10, caseCount: 10, casesPerPallet: 80, defaultRoyaltyRate: 0.05 },
 ];
 
 export const RETAILERS: Retailer[] = [
