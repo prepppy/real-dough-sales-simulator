@@ -25,7 +25,10 @@ export const Dashboard: React.FC = () => {
   const isProfit = state.metricMode === 'PROFIT';
   const metricLabel = isProfit ? 'Net Profit' : 'Gross Revenue';
 
-  // Metrics Logic
+  // Metrics Logic - Filtered to Real Dough Pizza Co (Simulated)
+  // In a real app, we'd filter by brandId. Here, we assume filteredStores contains the relevant data.
+  // ISSUE 2 FIX: Renamed metrics to be Real Dough specific
+  
   const totalStores = filteredStores.length;
   
   const totalFinancials = filteredStores.reduce((acc, store) => {
@@ -48,11 +51,13 @@ export const Dashboard: React.FC = () => {
     const value = isProfit ? fins.profit : fins.revenue;
     acc[channel] = (acc[channel] || 0) + value;
     return acc;
-  }, { 'DSD': 0, 'National Account': 0 } as Record<string, number>);
+  }, { 'DSD': 0, 'National Account': 0, 'Warehouse': 0 } as Record<string, number>);
 
+  // Combine Warehouse and National Account for display if needed, or keep separate
+  // Based on spec, Warehouse is key.
   const pieData = [
     { name: 'DSD', value: channelData['DSD'] },
-    { name: 'National Accounts', value: channelData['National Account'] },
+    { name: 'Warehouse/National', value: (channelData['National Account'] || 0) + (channelData['Warehouse'] || 0) },
   ];
 
   // Data for Bar Chart (Metric by Retailer)
@@ -73,8 +78,9 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Executive Summary</h2>
-            <p className="text-slate-500 mt-1">Real-time territory analysis and financial projections</p>
+            {/* ISSUE 2 FIX: Renamed from "Executive Summary" to "Retailer Performance" */}
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Retailer Performance</h2>
+            <p className="text-slate-500 mt-1">Real Dough Pizza Co. - Channel & Account Analysis</p>
         </div>
         <span className={`text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors border ${isProfit ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
           Currently Viewing: {metricLabel}
@@ -83,30 +89,31 @@ export const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title={`Total ${metricLabel}`}
+          title={`Real Dough ${metricLabel}`}
           value={formatCurrency(displayTotal)} 
-          subtext="Projected Annualized Run-Rate"
+          subtext="Annualized Run-Rate"
           icon={<DollarSign size={24} />}
           color={isProfit ? "bg-emerald-500" : "bg-blue-600"}
         />
         <StatCard 
-          title="Active Store Count" 
+          title="Real Dough Stores" 
           value={totalStores.toLocaleString()} 
           subtext={`Across ${state.selectedState === 'ALL' ? 'All Regions' : state.selectedState}`}
           icon={<Store size={24} />}
           color="bg-indigo-500"
         />
         <StatCard 
-          title="Avg. Velocity" 
+          title="Real Dough Velocity" 
           value={avgVelocity.toFixed(1)} 
-          subtext="Units Per Store Per Week (UPSPW)"
+          subtext="Units Per Store Per Week"
           icon={<TrendingUp size={24} />}
           color="bg-amber-500"
         />
+        {/* ISSUE 2 FIX: Removed generic DSD Contribution, replaced with Top Retailer Share */}
         <StatCard 
-          title="DSD Contribution" 
-          value={pieData[0].value > 0 ? ((pieData[0].value / displayTotal) * 100).toFixed(0) + '%' : '0%'} 
-          subtext={`Of Total ${metricLabel}`}
+          title="Top Retailer Share" 
+          value={barChartData.length > 0 ? ((barChartData[0].value / displayTotal) * 100).toFixed(0) + '%' : '0%'} 
+          subtext={`Driven by ${barChartData.length > 0 ? barChartData[0].name : 'None'}`}
           icon={<Package size={24} />}
           color="bg-rose-500"
         />
@@ -140,8 +147,8 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="bg-white/90 backdrop-blur rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
-          <h3 className="text-lg font-bold text-slate-800 mb-2">Channel Distribution</h3>
-          <p className="text-sm text-slate-400 mb-6">Split by {metricLabel}</p>
+          <h3 className="text-lg font-bold text-slate-800 mb-2">Channel Mix</h3>
+          <p className="text-sm text-slate-400 mb-6">Real Dough Volume Split</p>
           <div className="flex-1 min-h-[250px] relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -156,7 +163,7 @@ export const Dashboard: React.FC = () => {
                   cornerRadius={6}
                 >
                   <Cell key="DSD" fill="#e11d48" /> 
-                  <Cell key="National" fill="#2563eb" /> 
+                  <Cell key="Warehouse/National" fill="#2563eb" /> 
                 </Pie>
                 <Tooltip 
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
@@ -176,7 +183,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="bg-white/90 backdrop-blur rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h3 className="text-lg font-bold text-slate-800 mb-6">Top Performing Stores</h3>
+          <h3 className="text-lg font-bold text-slate-800 mb-6">Top Performing Stores (Real Dough)</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider text-xs">
