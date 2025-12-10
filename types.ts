@@ -41,6 +41,11 @@ export interface Scenario {
   promoLiftMultiplier: number; 
   incrementalRevenue: number;
   incrementalProfit: number;
+  // Custom Pricing Overrides
+  customWholesalePrice?: number;
+  customMSRP?: number;
+  customCOGS?: number;
+  slottingFees?: number;
 }
 
 export interface GlobalState {

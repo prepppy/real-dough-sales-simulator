@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSimulation } from '../context/SimulationContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Calculator, Save, ArrowRight, TrendingUp, PieChart, Info } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Calculator, Save, ArrowRight, TrendingUp, Info, DollarSign } from 'lucide-react';
 
 export const ScenarioBuilder: React.FC = () => {
   const { products, retailers, addScenario, formatCurrency, getRetailerChannel } = useSimulation();
@@ -13,30 +13,55 @@ export const ScenarioBuilder: React.FC = () => {
   const [promoLift, setPromoLift] = useState<number>(40); 
   const [scenarioName, setScenarioName] = useState('Q3 Pitch Scenario');
 
+  // Custom Pricing State
+  const [customWholesale, setCustomWholesale] = useState<number>(0);
+  const [customMSRP, setCustomMSRP] = useState<number>(0);
+  const [customCOGS, setCustomCOGS] = useState<number>(0);
+  const [slottingFees, setSlottingFees] = useState<number>(0);
+
   const currentRetailer = retailers.find(r => r.id === selectedRetailer);
   const currentProduct = products.find(p => p.id === selectedProduct);
   
+  // Reset defaults when product changes
+  useEffect(() => {
+    if (currentProduct) {
+        setCustomWholesale(currentProduct.wholesalePrice);
+        setCustomMSRP(currentProduct.msrp);
+        setCustomCOGS(currentProduct.cogs);
+    }
+  }, [currentProduct]);
+
   // Advanced Financial Logic
   const estimatedBaseVelocity = 12; // Units/week avg
-  const wholesalePrice = currentProduct?.wholesalePrice || 0;
-  const cogs = currentProduct?.cogs || 0;
-  const unitMargin = wholesalePrice - cogs;
   
-  // Revenue Calcs
+  // Use custom values for calculations
+  const wholesalePrice = customWholesale;
+  const unitMargin = wholesalePrice - customCOGS;
+  
+  // Revenue Calcs (Manufacturer Revenue)
   const annualBaseRevenue = estimatedBaseVelocity * targetStoreCount * wholesalePrice * 52;
   const promoRevenue = (estimatedBaseVelocity * targetStoreCount * wholesalePrice * promoWeeks * (promoLift / 100));
   const totalRevenue = annualBaseRevenue + promoRevenue;
 
   // Profit Calcs
-  const annualBaseProfit = estimatedBaseVelocity * targetStoreCount * unitMargin * 52;
+  const annualBaseProfit = (estimatedBaseVelocity * targetStoreCount * unitMargin * 52) - (slottingFees / 2); // Split slotting fees? or just subtract from total? Let's subtract from total net.
+  const annualBaseProfitRaw = estimatedBaseVelocity * targetStoreCount * unitMargin * 52;
+  
   const promoProfit = (estimatedBaseVelocity * targetStoreCount * unitMargin * promoWeeks * (promoLift / 100));
-  const totalProfit = annualBaseProfit + promoProfit;
+  
+  // Net Profit = (Base Profit + Promo Profit) - Slotting Fees
+  const totalProfit = annualBaseProfitRaw + promoProfit - slottingFees;
 
   // Lift
   const liftPercentage = annualBaseRevenue > 0 ? ((totalRevenue - annualBaseRevenue) / annualBaseRevenue) * 100 : 0;
 
+  // Retailer Margin Calculation
+  const retailerMargin = customMSRP > 0 ? ((customMSRP - customWholesale) / customMSRP) : 0;
+  const retailerMarginPercent = retailerMargin * 100;
+  const isMarginCompliant = currentRetailer && retailerMargin >= currentRetailer.marginRequirement;
+
   const data = [
-    { name: 'Baseline', Revenue: annualBaseRevenue, Profit: annualBaseProfit },
+    { name: 'Baseline', Revenue: annualBaseRevenue, Profit: annualBaseProfitRaw }, // Baseline usually doesn't include one-off fees in visual comparison, or maybe it should? Let's keep raw for baseline to show lift clearly.
     { name: 'With Promo', Revenue: totalRevenue, Profit: totalProfit },
   ];
 
@@ -51,7 +76,11 @@ export const ScenarioBuilder: React.FC = () => {
         promoWeeks,
         promoLiftMultiplier: 1 + (promoLift/100),
         incrementalRevenue: promoRevenue,
-        incrementalProfit: promoProfit
+        incrementalProfit: promoProfit - slottingFees, // Net incremental
+        customWholesalePrice: customWholesale,
+        customMSRP: customMSRP,
+        customCOGS: customCOGS,
+        slottingFees: slottingFees
     });
     alert('Scenario Saved!');
   };
@@ -111,6 +140,51 @@ export const ScenarioBuilder: React.FC = () => {
                     <div className="text-right">
                         <span className="block font-bold text-lg">{(currentRetailer?.marginRequirement || 0) * 100}%</span>
                         <span className="text-xs opacity-80">Req. Margin</span>
+                    </div>
+                </div>
+
+                {/* Pricing Inputs */}
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-800 flex items-center">
+                        <DollarSign size={16} className="mr-1" /> Pricing & Costs
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Wholesale ($)</label>
+                            <input 
+                                type="number" step="0.01"
+                                value={customWholesale}
+                                onChange={(e) => setCustomWholesale(parseFloat(e.target.value) || 0)}
+                                className="w-full p-2 border border-slate-200 rounded-lg text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">MSRP ($)</label>
+                            <input 
+                                type="number" step="0.01"
+                                value={customMSRP}
+                                onChange={(e) => setCustomMSRP(parseFloat(e.target.value) || 0)}
+                                className="w-full p-2 border border-slate-200 rounded-lg text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">COGS ($)</label>
+                            <input 
+                                type="number" step="0.01"
+                                value={customCOGS}
+                                onChange={(e) => setCustomCOGS(parseFloat(e.target.value) || 0)}
+                                className="w-full p-2 border border-slate-200 rounded-lg text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Slotting Fees ($)</label>
+                            <input 
+                                type="number" step="100"
+                                value={slottingFees}
+                                onChange={(e) => setSlottingFees(parseFloat(e.target.value) || 0)}
+                                className="w-full p-2 border border-slate-200 rounded-lg text-sm"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -206,8 +280,8 @@ export const ScenarioBuilder: React.FC = () => {
              <div className="grid grid-cols-2 gap-4 mt-8">
                 <div className="p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-100">
                     <p className="text-xs text-emerald-700 uppercase font-bold tracking-wider">Incremental Profit</p>
-                    <p className="text-3xl font-bold text-emerald-800 mt-2">+{formatCurrency(promoProfit)}</p>
-                    <p className="text-xs text-emerald-600 mt-1 opacity-80">Net impact to bottom line</p>
+                    <p className="text-3xl font-bold text-emerald-800 mt-2">{promoProfit - slottingFees > 0 ? '+' : ''}{formatCurrency(promoProfit - slottingFees)}</p>
+                    <p className="text-xs text-emerald-600 mt-1 opacity-80">Net impact (after fees)</p>
                 </div>
                 <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-100">
                     <p className="text-xs text-blue-700 uppercase font-bold tracking-wider">Total Revenue Lift</p>
@@ -232,16 +306,16 @@ export const ScenarioBuilder: React.FC = () => {
              <div className="flex space-x-8 text-right">
                   <div>
                       <span className="text-slate-500 block text-xs uppercase tracking-wider">Wholesale</span>
-                      <span className="font-mono text-lg">${currentProduct?.wholesalePrice.toFixed(2)}</span>
+                      <span className="font-mono text-lg">${customWholesale.toFixed(2)}</span>
                   </div>
                   <div>
                       <span className="text-slate-500 block text-xs uppercase tracking-wider">MSRP</span>
-                      <span className="font-mono text-lg">${currentProduct?.msrp.toFixed(2)}</span>
+                      <span className="font-mono text-lg">${customMSRP.toFixed(2)}</span>
                   </div>
-                  <div className="bg-slate-800 px-4 py-1 rounded-lg border border-slate-700">
+                  <div className={`bg-slate-800 px-4 py-1 rounded-lg border ${isMarginCompliant ? 'border-emerald-500/50' : 'border-red-500/50'}`}>
                       <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Margin %</span>
-                      <span className="font-bold text-xl text-emerald-400">
-                        {((1 - (currentProduct?.wholesalePrice || 0) / (currentProduct?.msrp || 1)) * 100).toFixed(1)}%
+                      <span className={`font-bold text-xl ${isMarginCompliant ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {retailerMarginPercent.toFixed(1)}%
                       </span>
                   </div>
               </div>
