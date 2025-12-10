@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { SimulationProvider, useSimulation } from './context/SimulationContext';
+import { ExecutiveOverview } from './components/ExecutiveOverview'; // New Import
 import { Dashboard } from './components/Dashboard';
 import { MapPanel } from './components/MapPanel';
 import { ScenarioBuilder } from './components/ScenarioBuilder';
 import { RetailerTable } from './components/RetailerTable';
 import { ProjectionsView } from './components/ProjectionsView';
-import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp, PieChart } from 'lucide-react'; // Added PieChart
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const MainLayout: React.FC = () => {
   const { state, setFilter, scenarios, filteredStores } = useSimulation();
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'MAP' | 'SCENARIO' | 'TABLE' | 'PROJECTIONS'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DASHBOARD' | 'MAP' | 'SCENARIO' | 'TABLE' | 'PROJECTIONS'>('OVERVIEW'); // Added OVERVIEW
   const [isExporting, setIsExporting] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
 
@@ -62,6 +63,13 @@ const MainLayout: React.FC = () => {
             </div>
             
             <nav className="flex-1 py-6 space-y-2 px-3">
+                <NavButton 
+                    active={activeTab === 'OVERVIEW'} 
+                    onClick={() => setActiveTab('OVERVIEW')} 
+                    icon={<PieChart size={20} />} 
+                    label="Executive Overview" 
+                    collapsed={presentationMode}
+                />
                 <NavButton 
                     active={activeTab === 'DASHBOARD'} 
                     onClick={() => setActiveTab('DASHBOARD')} 
@@ -214,6 +222,7 @@ const MainLayout: React.FC = () => {
 
             {/* Scrollable Viewport */}
             <div id="app-content" className="flex-1 overflow-auto bg-slate-50 p-8 custom-scrollbar">
+                {activeTab === 'OVERVIEW' && <ExecutiveOverview />}
                 {activeTab === 'DASHBOARD' && <Dashboard />}
                 {activeTab === 'PROJECTIONS' && <ProjectionsView />}
                 {activeTab === 'MAP' && <MapPanel />}
