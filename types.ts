@@ -6,9 +6,10 @@ export interface Product {
   cogs: number; // Now Fixed at $4.34 generally, but keep flexible
   caseCount: number;
   casesPerPallet: number;
+  defaultRoyaltyRate?: number; // Optional to prevent TS error, though we migrated to calculated
 }
 
-export type RetailerChannel = 'DSD' | 'Warehouse' | 'National Account'; // Updated 'Warehouse' based on new docs
+export type RetailerChannel = 'DSD' | 'Warehouse' | 'National Account';
 
 export interface Retailer {
   id: string;

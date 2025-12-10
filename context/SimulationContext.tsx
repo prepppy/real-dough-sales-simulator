@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
-import { Product, Retailer, Store, Scenario, GlobalState } from '../types';
+import { Product, Retailer, Store, Scenario, GlobalState, RetailerChannel } from '../types';
 import { PRODUCTS, RETAILERS, STORES } from '../constants';
 
 interface SimulationContextType {
@@ -13,7 +13,7 @@ interface SimulationContextType {
   updateStore: (storeId: string, updates: Partial<Store>) => void;
   addScenario: (scenario: Scenario) => void;
   formatCurrency: (value: number) => string;
-  getRetailerChannel: (retailerId: string) => 'DSD' | 'National Account';
+  getRetailerChannel: (retailerId: string) => RetailerChannel;
   calculateStoreFinancials: (store: Store) => { revenue: number; profit: number };
 }
 
@@ -34,7 +34,7 @@ export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children
     presentationMode: false,
   });
 
-  const getRetailerChannel = (retailerId: string) => {
+  const getRetailerChannel = (retailerId: string): RetailerChannel => {
     return retailers.find(r => r.id === retailerId)?.channel || 'National Account';
   };
 
