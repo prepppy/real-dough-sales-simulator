@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { SimulationProvider, useSimulation } from './context/SimulationContext';
-import { ExecutiveOverview } from './components/ExecutiveOverview'; // New Import
+import { ExecutiveOverview } from './components/ExecutiveOverview';
+import { RoyaltyDashboard } from './components/RoyaltyDashboard'; // New Import
 import { Dashboard } from './components/Dashboard';
 import { MapPanel } from './components/MapPanel';
 import { ScenarioBuilder } from './components/ScenarioBuilder';
 import { RetailerTable } from './components/RetailerTable';
 import { ProjectionsView } from './components/ProjectionsView';
-import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp, PieChart } from 'lucide-react'; // Added PieChart
+import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp, PieChart, Banknote } from 'lucide-react'; // Added Banknote
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const MainLayout: React.FC = () => {
   const { state, setFilter, scenarios, filteredStores } = useSimulation();
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'DASHBOARD' | 'MAP' | 'SCENARIO' | 'TABLE' | 'PROJECTIONS'>('OVERVIEW'); // Added OVERVIEW
+  // Updated Tabs: Added ROYALTY, Removed TABLE (renamed to STORE_PERF later), Renamed DASHBOARD to RETAILER_PERF
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ROYALTY' | 'RETAILER_PERF' | 'PROJECTIONS' | 'MAP' | 'SCENARIO' | 'STORE_PERF'>('OVERVIEW'); 
   const [isExporting, setIsExporting] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
 
@@ -71,10 +73,17 @@ const MainLayout: React.FC = () => {
                     collapsed={presentationMode}
                 />
                 <NavButton 
-                    active={activeTab === 'DASHBOARD'} 
-                    onClick={() => setActiveTab('DASHBOARD')} 
+                    active={activeTab === 'ROYALTY'} 
+                    onClick={() => setActiveTab('ROYALTY')} 
+                    icon={<Banknote size={20} />} 
+                    label="Royalty Dashboard" 
+                    collapsed={presentationMode}
+                />
+                <NavButton 
+                    active={activeTab === 'RETAILER_PERF'} 
+                    onClick={() => setActiveTab('RETAILER_PERF')} 
                     icon={<LayoutDashboard size={20} />} 
-                    label="Command Center" 
+                    label="Retailer Performance" 
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -99,10 +108,10 @@ const MainLayout: React.FC = () => {
                     collapsed={presentationMode}
                 />
                 <NavButton 
-                    active={activeTab === 'TABLE'} 
-                    onClick={() => setActiveTab('TABLE')} 
+                    active={activeTab === 'STORE_PERF'} 
+                    onClick={() => setActiveTab('STORE_PERF')} 
                     icon={<Table size={20} />} 
-                    label="Store Data" 
+                    label="Store Performance" 
                     collapsed={presentationMode}
                 />
             </nav>
@@ -139,42 +148,13 @@ const MainLayout: React.FC = () => {
 
                     <div className="h-8 w-px bg-slate-200"></div>
 
-                    {/* Channel Selector */}
-                    <div className="flex items-center space-x-3 bg-white px-1 py-1 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="flex bg-slate-100/50 rounded-lg p-1">
-                            {['ALL', 'DSD', 'National Account'].map((opt) => (
-                                <button 
-                                    key={opt}
-                                    onClick={() => setFilter('selectedChannel', opt)}
-                                    className={`px-4 py-1.5 text-xs rounded-md transition-all font-bold ${state.selectedChannel === opt 
-                                        ? 'bg-white shadow text-slate-900 ring-1 ring-black/5' 
-                                        : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    {opt === 'National Account' ? 'National' : opt}
-                                </button>
-                            ))}
+                    {/* Brand Filter Label (Visual Only for now) */}
+                    <div className="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Brand:</span>
+                        <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></div>
+                            <span className="text-sm font-bold text-slate-800">Real Dough Pizza Co.</span>
                         </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm group hover:border-blue-300 transition-colors cursor-pointer">
-                        <Filter size={18} className="text-slate-400 group-hover:text-blue-500" />
-                        <select 
-                            className="bg-transparent text-sm font-semibold outline-none text-slate-700 cursor-pointer min-w-[120px]"
-                            value={state.selectedState}
-                            onChange={(e) => setFilter('selectedState', e.target.value)}
-                        >
-                            <option value="ALL">All Regions</option>
-                            <option value="IL">Illinois</option>
-                            <option value="WI">Wisconsin</option>
-                            <option value="MN">Minnesota</option>
-                            <option value="IA">Iowa</option>
-                            <option value="MO">Missouri</option>
-                            <option value="FL">Florida</option>
-                            <option value="GA">Georgia</option>
-                            <option value="NC">North Carolina</option>
-                            <option value="CA">California</option>
-                            <option value="TX">Texas</option>
-                        </select>
                     </div>
                 </div>
 
@@ -223,11 +203,12 @@ const MainLayout: React.FC = () => {
             {/* Scrollable Viewport */}
             <div id="app-content" className="flex-1 overflow-auto bg-slate-50 p-8 custom-scrollbar">
                 {activeTab === 'OVERVIEW' && <ExecutiveOverview />}
-                {activeTab === 'DASHBOARD' && <Dashboard />}
+                {activeTab === 'ROYALTY' && <RoyaltyDashboard />}
+                {activeTab === 'RETAILER_PERF' && <Dashboard />}
                 {activeTab === 'PROJECTIONS' && <ProjectionsView />}
                 {activeTab === 'MAP' && <MapPanel />}
                 {activeTab === 'SCENARIO' && <ScenarioBuilder />}
-                {activeTab === 'TABLE' && <RetailerTable />}
+                {activeTab === 'STORE_PERF' && <RetailerTable />}
             </div>
 
         </main>
