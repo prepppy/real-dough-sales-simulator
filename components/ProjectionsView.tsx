@@ -6,33 +6,43 @@ import { Store } from 'lucide-react';
 import { PageHeader } from './common/PageHeader';
 import { MetricCard } from './common/MetricCard';
 
-// Define 2026 Data locally as it's specific to this view's new requirement
+// Define 2026 Data - Full year forecast with Q2 actuals
+// Full Year Totals: Revenue $8,695,000 | Royalty $1,037,000 (~12% margin)
 const PROJECTIONS_2026 = [
+  {
+    quarter: 'Q1 2026',
+    revenue: 985000,
+    profit: 120000, // Representing Royalty (~12.2% margin)
+    activeStores: 150,
+    growth: 0,
+    notes: "Launch ramp-up. Initial Target & Walmart rollout.",
+    status: "ACTUAL"
+  },
   {
     quarter: 'Q2 2026',
     revenue: 1320000,
-    profit: 157000, // Representing Royalty
-    activeStores: 245,
-    growth: 0,
-    notes: "Launch Quarter (Actuals). Strong initial acceptance.",
+    profit: 157000, // Representing Royalty (~11.9% margin)
+    activeStores: 895,
+    growth: 34.0,
+    notes: "Strong Q2 (Actuals). Full distribution achieved.",
     status: "ACTUAL"
   },
   {
     quarter: 'Q3 2026',
-    revenue: 2640000,
-    profit: 313000,
-    activeStores: 580,
-    growth: 100,
-    notes: "Projected: Expansion into Chicago & Milwaukee.",
+    revenue: 2850000,
+    profit: 340000, // Representing Royalty (~11.9% margin)
+    activeStores: 1145,
+    growth: 116.0,
+    notes: "Projected: Publix launch (250 stores) + Chicago expansion.",
     status: "PROJECTED"
   },
   {
     quarter: 'Q4 2026',
-    revenue: 3530000,
-    profit: 421000,
-    activeStores: 920,
-    growth: 33.7,
-    notes: "Projected: Holiday season push & 1000 store goal.",
+    revenue: 3540000,
+    profit: 420000, // Representing Royalty (~11.9% margin)
+    activeStores: 1345,
+    growth: 24.2,
+    notes: "Projected: Kroger launch (200 stores) + holiday push.",
     status: "PROJECTED"
   }
 ];
@@ -47,9 +57,9 @@ export const ProjectionsView: React.FC = () => {
   const totalRevenue = currentData.reduce((acc, curr) => acc + curr.revenue, 0);
   const totalProfit = currentData.reduce((acc, curr) => acc + curr.profit, 0);
   
-  // Calculate growth properly
+  // Calculate growth properly (Q1 to Q4)
   const totalGrowth = is2026 
-    ? ((PROJECTIONS_2026[2].revenue - PROJECTIONS_2026[0].revenue) / PROJECTIONS_2026[0].revenue) * 100
+    ? ((PROJECTIONS_2026[3].revenue - PROJECTIONS_2026[0].revenue) / PROJECTIONS_2026[0].revenue) * 100
     : ((PROJECTIONS_2027[3].revenue - PROJECTIONS_2027[0].revenue) / PROJECTIONS_2027[0].revenue) * 100;
 
   return (
