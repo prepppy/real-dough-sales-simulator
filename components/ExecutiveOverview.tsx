@@ -36,26 +36,28 @@ export const ExecutiveOverview: React.FC = () => {
   ];
 
   // Quick Insights Data
-  const insights = [
+  type InsightType = 'success' | 'warning' | 'info';
+  
+  const insights: Array<{ icon: string; text: string; type: InsightType }> = [
     {
       icon: '🚀',
       text: 'On track to exceed Q2 royalty target by $7,410',
-      type: 'success' as const
+      type: 'success'
     },
     {
       icon: '📈',
       text: 'Madison velocity +31% above target (4.2 vs 3.2)',
-      type: 'success' as const
+      type: 'success'
     },
     {
       icon: '⚡',
       text: 'Weighted ASP $0.04 above goal - optimal pricing achieved',
-      type: 'info' as const
+      type: 'info'
     },
     {
       icon: '🎯',
       text: 'Target distribution 98% complete (147/150 stores)',
-      type: 'success' as const
+      type: 'success'
     }
   ];
 
@@ -178,7 +180,7 @@ export const ExecutiveOverview: React.FC = () => {
                                 tickLine={false} 
                                 tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 600}} 
                             />
-                            <Tooltip 
+                            <ChartTooltip 
                                 contentStyle={{
                                     backgroundColor: '#000', 
                                     borderRadius: '12px', 
