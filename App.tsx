@@ -9,44 +9,13 @@ import { MapPanel } from './components/MapPanel';
 import { ScenarioBuilder } from './components/ScenarioBuilder';
 import { RetailerTable } from './components/RetailerTable';
 import { ProjectionsView } from './components/ProjectionsView';
-import { LayoutDashboard, Map as MapIcon, Table, Calculator, Download, Pizza, MonitorPlay, TrendingUp, PieChart, Banknote, BarChart3, Package } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { LayoutDashboard, Map as MapIcon, Table, Calculator, Pizza, MonitorPlay, TrendingUp, PieChart, Banknote, BarChart3, Package } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const { scenarios } = useSimulation();
   
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ROYALTY' | 'RETAILER_PERF' | 'MARKET_PERF' | 'SKU_PERF' | 'PROJECTIONS' | 'MAP' | 'SCENARIO' | 'STORE_PERF'>('OVERVIEW'); 
-  const [isExporting, setIsExporting] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
-
-  const handleExport = async () => {
-    setIsExporting(true);
-    const element = document.getElementById('app-content');
-    if (element) {
-        try {
-            const canvas = await html2canvas(element, { scale: 2 });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('l', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            
-            // Add Header to PDF
-            pdf.setFillColor(20, 20, 20);
-            pdf.rect(0, 0, pdfWidth, 20, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(16);
-            pdf.text('Real Dough Pizza Co. - Territory Analysis', 10, 13);
-            
-            pdf.addImage(imgData, 'PNG', 0, 20, pdfWidth, pdfHeight);
-            pdf.save('RealDough_PitchDeck.pdf');
-        } catch (e) {
-            console.error(e);
-            alert('Export failed, check console.');
-        }
-    }
-    setIsExporting(false);
-  };
 
   return (
     <div className="flex h-screen w-full bg-bg-primary font-sans text-slate-800 overflow-hidden">
@@ -180,17 +149,6 @@ const MainLayout: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Right Controls - Clean & Minimal */}
-                <div className="flex items-center space-x-4">
-                    <button 
-                        onClick={handleExport}
-                        disabled={isExporting}
-                        className="flex items-center space-x-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all shadow-md active:scale-95"
-                    >
-                        <Download size={18} />
-                        <span className="hidden md:inline">{isExporting ? 'Generating...' : 'Export One-Pager'}</span>
-                    </button>
-                </div>
             </header>
 
             {/* Scrollable Viewport */}
