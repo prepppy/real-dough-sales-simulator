@@ -15,7 +15,7 @@ import jsPDF from 'jspdf';
 
 const MainLayout: React.FC = () => {
   const { state, setFilter, scenarios, filteredStores } = useSimulation();
-  // Updated Tabs: Added MARKET_PERF and SKU_PERF
+  
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ROYALTY' | 'RETAILER_PERF' | 'MARKET_PERF' | 'SKU_PERF' | 'PROJECTIONS' | 'MAP' | 'SCENARIO' | 'STORE_PERF'>('OVERVIEW'); 
   const [isExporting, setIsExporting] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
@@ -53,25 +53,27 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-stone-100 font-sans text-slate-800 overflow-hidden">
+    <div className="flex h-screen w-full bg-bg-primary font-sans text-slate-800 overflow-hidden">
         {/* Sidebar - Hidden in Presentation Mode */}
-        <aside className={`${presentationMode ? '-ml-72' : 'w-20 lg:w-72'} bg-slate-900 text-white flex flex-col flex-shrink-0 transition-all duration-500 ease-in-out shadow-xl z-30`}>
+        <aside className={`${presentationMode ? '-ml-72' : 'w-20 lg:w-72'} bg-bg-dark text-white flex flex-col flex-shrink-0 transition-all duration-500 ease-in-out shadow-xl z-30`}>
             <div className="p-6 flex items-center space-x-4 border-b border-slate-800/50">
-                <div className="bg-gradient-to-br from-red-600 to-red-800 p-2.5 rounded-xl shadow-lg">
+                <div className="bg-rd-primary p-2.5 rounded-xl shadow-lg">
                     <Pizza size={28} className="text-white" />
                 </div>
                 <div className={`hidden lg:block transition-opacity duration-300 ${presentationMode ? 'opacity-0' : 'opacity-100'}`}>
-                  <span className="font-bold text-xl tracking-tight block">Real Dough</span>
+                  <h1 className="font-display font-bold text-xl tracking-tight block">Real Dough</h1>
                   <span className="text-xs text-slate-400 font-medium tracking-wide">Sales Simulator v2.0</span>
                 </div>
             </div>
             
-            <nav className="flex-1 py-6 space-y-2 px-3">
+            <nav className="flex-1 py-6 space-y-2 px-3 overflow-y-auto custom-scrollbar">
                 <NavButton 
                     active={activeTab === 'OVERVIEW'} 
                     onClick={() => setActiveTab('OVERVIEW')} 
                     icon={<PieChart size={20} />} 
                     label="Executive Overview" 
+                    number="01"
+                    color="red"
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -79,6 +81,8 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('ROYALTY')} 
                     icon={<Banknote size={20} />} 
                     label="Royalty Dashboard" 
+                    number="02"
+                    color="orange"
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -86,6 +90,8 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('RETAILER_PERF')} 
                     icon={<LayoutDashboard size={20} />} 
                     label="Retailer Performance" 
+                    number="03"
+                    color="purple"
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -93,6 +99,8 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('MARKET_PERF')} 
                     icon={<BarChart3 size={20} />} 
                     label="Market Performance" 
+                    number="04"
+                    color="blue"
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -100,13 +108,17 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('SKU_PERF')} 
                     icon={<Package size={20} />} 
                     label="SKU Performance" 
+                    number="05"
+                    color="green"
                     collapsed={presentationMode}
                 />
                 <NavButton 
                     active={activeTab === 'PROJECTIONS'} 
                     onClick={() => setActiveTab('PROJECTIONS')} 
                     icon={<TrendingUp size={20} />} 
-                    label="2026 Projections" 
+                    label="2025 Forecast" 
+                    number="06"
+                    color="yellow"
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -114,6 +126,8 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('MAP')} 
                     icon={<MapIcon size={20} />} 
                     label="Distribution Map" 
+                    number="07"
+                    color="pink" // Using pink for map as per plan
                     collapsed={presentationMode}
                 />
                 <NavButton 
@@ -121,13 +135,17 @@ const MainLayout: React.FC = () => {
                     onClick={() => setActiveTab('SCENARIO')} 
                     icon={<Calculator size={20} />} 
                     label="Scenario Builder" 
+                    number="08"
+                    color="cyan" // Cyan isn't in config but we can handle it or use blue
                     collapsed={presentationMode}
                 />
                 <NavButton 
                     active={activeTab === 'STORE_PERF'} 
                     onClick={() => setActiveTab('STORE_PERF')} 
                     icon={<Table size={20} />} 
-                    label="Store Performance" 
+                    label="Store Data" 
+                    number="09"
+                    color="gray"
                     collapsed={presentationMode}
                 />
             </nav>
@@ -139,7 +157,7 @@ const MainLayout: React.FC = () => {
                         <p className="italic opacity-50">No active scenarios.</p>
                     ) : (
                         <ul className="space-y-2">
-                            {scenarios.map(s => <li key={s.id} className="truncate flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2"></div> {s.name}</li>)}
+                            {scenarios.map(s => <li key={s.id} className="truncate flex items-center"><div className="w-1.5 h-1.5 rounded-full bg-rd-green mr-2"></div> {s.name}</li>)}
                         </ul>
                     )}
                 </div>
@@ -147,7 +165,7 @@ const MainLayout: React.FC = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden relative transition-all duration-500">
+        <main className="flex-1 flex flex-col h-screen overflow-hidden relative transition-all duration-500 bg-bg-primary">
             
             {/* Header */}
             <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-8 flex-shrink-0 z-20">
@@ -168,7 +186,7 @@ const MainLayout: React.FC = () => {
                     <div className="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Brand:</span>
                         <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 bg-rd-primary rounded-full animate-pulse"></div>
                             <span className="text-sm font-bold text-slate-800">Real Dough Pizza Co.</span>
                         </div>
                     </div>
@@ -217,7 +235,7 @@ const MainLayout: React.FC = () => {
             </header>
 
             {/* Scrollable Viewport */}
-            <div id="app-content" className="flex-1 overflow-auto bg-slate-50 p-8 custom-scrollbar">
+            <div id="app-content" className="flex-1 overflow-auto bg-bg-primary p-8 custom-scrollbar">
                 {activeTab === 'OVERVIEW' && <ExecutiveOverview />}
                 {activeTab === 'ROYALTY' && <RoyaltyDashboard />}
                 {activeTab === 'RETAILER_PERF' && <Dashboard />}
@@ -234,16 +252,52 @@ const MainLayout: React.FC = () => {
   );
 };
 
-const NavButton: React.FC<{ active: boolean; onClick: () => void; icon: React.ReactNode; label: string; collapsed: boolean }> = ({ active, onClick, icon, label, collapsed }) => (
-    <button 
-        onClick={onClick}
-        title={collapsed ? label : ''}
-        className={`w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${active ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-900/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-    >
-        <div className={active ? 'text-white' : 'group-hover:scale-110 transition-transform'}>{icon}</div>
-        {!collapsed && <span className="hidden lg:block font-semibold text-sm tracking-wide">{label}</span>}
-    </button>
-);
+interface NavButtonProps {
+    active: boolean;
+    onClick: () => void;
+    icon: React.ReactNode;
+    label: string;
+    number: string;
+    color: string;
+    collapsed: boolean;
+}
+
+const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label, number, color, collapsed }) => {
+    // Determine styles based on color prop
+    let activeBg = 'bg-slate-800';
+    let hoverColor = 'text-slate-400';
+    let activeShadow = 'shadow-slate-900/20';
+
+    if (color === 'red') { activeBg = 'bg-rd-primary'; hoverColor = 'hover:text-rd-primary'; activeShadow = 'shadow-rd-primary/30'; }
+    if (color === 'orange') { activeBg = 'bg-rd-secondary'; hoverColor = 'hover:text-rd-secondary'; activeShadow = 'shadow-rd-secondary/30'; }
+    if (color === 'purple') { activeBg = 'bg-rd-purple'; hoverColor = 'hover:text-rd-purple'; activeShadow = 'shadow-rd-purple/30'; }
+    if (color === 'blue') { activeBg = 'bg-rd-blue'; hoverColor = 'hover:text-rd-blue'; activeShadow = 'shadow-rd-blue/30'; }
+    if (color === 'green') { activeBg = 'bg-rd-green'; hoverColor = 'hover:text-rd-green'; activeShadow = 'shadow-rd-green/30'; }
+    if (color === 'yellow') { activeBg = 'bg-rd-yellow'; hoverColor = 'hover:text-rd-yellow'; activeShadow = 'shadow-rd-yellow/30'; }
+    // Add other color logic if needed, fallback to default for now
+
+    return (
+        <button 
+            onClick={onClick}
+            title={collapsed ? label : ''}
+            className={`
+                w-full flex items-center space-x-3 px-5 py-4 rounded-xl transition-all duration-200 group nav-item
+                ${active 
+                    ? `${activeBg} text-white shadow-lg ${activeShadow} font-bold` 
+                    : `text-slate-400 hover:bg-slate-800/50 hover:text-white ${hoverColor}`
+                }
+            `}
+        >
+            <div className={`text-[10px] font-bold opacity-50 w-4 tabular-nums ${active ? 'text-white' : 'text-slate-600'}`}>
+                {number}
+            </div>
+            <div className={active ? 'text-white' : 'group-hover:scale-110 transition-transform'}>
+                {icon}
+            </div>
+            {!collapsed && <span className="hidden lg:block font-medium text-sm tracking-wide">{label}</span>}
+        </button>
+    );
+};
 
 const App: React.FC = () => {
     return (
