@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSimulation } from '../context/SimulationContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { PageHeader } from './common/PageHeader';
+import { Tooltip } from './common/Tooltip';
 
 export const RoyaltyDashboard: React.FC = () => {
   const { formatCurrency } = useSimulation();
@@ -27,13 +28,12 @@ export const RoyaltyDashboard: React.FC = () => {
 
   const totalRoyalty = dsdData.totalRoyalty + warehouseData.totalRoyalty;
 
+  // Q2 2025 Actuals - Only Target and Walmart launched
   const retailerRoyalties = [
-    { name: 'Target', channel: 'DSD', units: 42500, asp: 9.45, rate: 1.00, total: 42500 },
-    { name: 'Walmart', channel: 'Warehouse', units: 48000, asp: 8.33, rate: 1.31, total: 62880 },
-    { name: 'Publix', channel: 'DSD', units: 18750, asp: 9.38, rate: 1.00, total: 18750 },
-    { name: 'Kroger', channel: 'DSD', units: 15000, asp: 9.22, rate: 0.95, total: 14250 },
-    { name: 'Costco', channel: 'Warehouse', units: 5250, asp: 8.05, rate: 1.00, total: 5250 },
-    { name: 'Regional', channel: 'DSD', units: 13000, asp: 9.18, rate: 0.93, total: 12090 },
+    { name: 'Target', channel: 'DSD', units: 89250, asp: 9.32, rate: 1.00, total: 89250 },
+    { name: 'Walmart', channel: 'Warehouse', units: 53250, asp: 8.29, rate: 1.28, total: 68160 },
+    // Publix - Launching Q3 2025
+    // Kroger - Launching Q3 2025
   ];
 
   // ASP Distribution Mock Data
@@ -75,11 +75,17 @@ export const RoyaltyDashboard: React.FC = () => {
 
                 <div className="bg-slate-50 p-6 rounded-xl space-y-3 mb-auto">
                     <div className="flex justify-between text-sm font-medium">
-                        <span className="text-slate-500">Base Royalty</span>
+                        <span className="text-slate-500 inline-flex items-center">
+                            Base Royalty
+                            <Tooltip content="Fixed $0.50 per unit payment guaranteed at all ASP levels. Minimum royalty floor." />
+                        </span>
                         <span className="font-mono text-slate-900">${dsdData.baseRate.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm font-medium">
-                        <span className="text-slate-500">Additional (ASP Based)</span>
+                        <span className="text-slate-500 inline-flex items-center">
+                            Additional (ASP Based)
+                            <Tooltip content="Variable royalty based on Average Selling Price. Higher prices = higher additional royalty. Ranges from $0.00 to $0.50 for DSD." />
+                        </span>
                         <span className="font-mono text-slate-900">${dsdData.addlRate.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between pt-3 border-t border-slate-200 font-bold text-base">
@@ -114,11 +120,17 @@ export const RoyaltyDashboard: React.FC = () => {
 
                 <div className="bg-slate-50 p-6 rounded-xl space-y-3 mb-auto">
                     <div className="flex justify-between text-sm font-medium">
-                        <span className="text-slate-500">Base Royalty</span>
+                        <span className="text-slate-500 inline-flex items-center">
+                            Base Royalty
+                            <Tooltip content="Fixed $0.50 per unit payment guaranteed at all ASP levels. Minimum royalty floor." />
+                        </span>
                         <span className="font-mono text-slate-900">${warehouseData.baseRate.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm font-medium">
-                        <span className="text-slate-500">Additional (ASP Based)</span>
+                        <span className="text-slate-500 inline-flex items-center">
+                            Additional (ASP Based)
+                            <Tooltip content="Variable royalty based on Average Selling Price. Higher prices = higher additional royalty. Ranges from $0.00 to $0.90 for Warehouse." />
+                        </span>
                         <span className="font-mono text-slate-900">${warehouseData.addlRate.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between pt-3 border-t border-slate-200 font-bold text-base">

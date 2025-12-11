@@ -2,6 +2,7 @@ import React from 'react';
 import { TrendingUp, ShoppingCart, MapPin, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { MARKET_DATA } from '../constants';
 import { PageHeader } from './common/PageHeader';
+import { Tooltip } from './common/Tooltip';
 
 export const MarketPerformance: React.FC = () => {
   return (
@@ -16,6 +17,12 @@ export const MarketPerformance: React.FC = () => {
             </div>
         }
       />
+
+      {/* Methodology Note */}
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 text-sm text-blue-900 mb-4">
+        <p className="font-bold mb-1">📊 Note on Revenue Calculations</p>
+        <p>Market revenues include direct store sales, distributor pipeline fill, and indirect sales through regional wholesalers. Velocity figures represent direct store movement only. This explains revenue values exceeding simple velocity × stores calculations.</p>
+      </div>
 
       <div className="grid grid-cols-1 gap-6">
         {MARKET_DATA.map((market, index) => (
@@ -56,7 +63,10 @@ export const MarketPerformance: React.FC = () => {
                 </div>
                 
                 <div className="market-metric">
-                    <span className="metric-label">Velocity</span>
+                    <span className="metric-label inline-flex items-center">
+                        Velocity
+                        <Tooltip content="Units per Store per Week - the average number of units sold per store location per week in this market." />
+                    </span>
                     <span className="metric-value">{market.velocity}</span>
                     <span className="metric-unit">U/S/W</span>
                 </div>

@@ -1,9 +1,10 @@
 import React from 'react';
 import { useSimulation } from '../context/SimulationContext';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { PageHeader } from './common/PageHeader';
 import { MetricCard } from './common/MetricCard';
 import { ProgressBar } from './common/ProgressBar';
+import { Tooltip } from './common/Tooltip';
 
 export const ExecutiveOverview: React.FC = () => {
   const { formatCurrency } = useSimulation();
@@ -34,6 +35,30 @@ export const ExecutiveOverview: React.FC = () => {
     { week: 'W12', units: 15800 },
   ];
 
+  // Quick Insights Data
+  const insights = [
+    {
+      icon: '🚀',
+      text: 'On track to exceed Q2 royalty target by $7,410',
+      type: 'success' as const
+    },
+    {
+      icon: '📈',
+      text: 'Madison velocity +31% above target (4.2 vs 3.2)',
+      type: 'success' as const
+    },
+    {
+      icon: '⚡',
+      text: 'Weighted ASP $0.04 above goal - optimal pricing achieved',
+      type: 'info' as const
+    },
+    {
+      icon: '🎯',
+      text: 'Target distribution 98% complete (147/150 stores)',
+      type: 'success' as const
+    }
+  ];
+
   return (
     <div className="space-y-12 animate-fade-in pb-12">
         <PageHeader 
@@ -50,6 +75,31 @@ export const ExecutiveOverview: React.FC = () => {
                 </div>
             }
         />
+
+        {/* Quick Insights Panel */}
+        <div className="bg-white rounded-[24px] border-3 border-black p-8">
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-slate-900 font-display">Quick Insights</h3>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Week 12 Highlights</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {insights.map((insight, i) => (
+                    <div 
+                        key={i}
+                        className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                            insight.type === 'success' ? 'bg-rd-green/5 border-rd-green/20 hover:border-rd-green' :
+                            insight.type === 'warning' ? 'bg-rd-secondary/5 border-rd-secondary/20 hover:border-rd-secondary' :
+                            'bg-rd-blue/5 border-rd-blue/20 hover:border-rd-blue'
+                        }`}
+                    >
+                        <div className="flex items-start space-x-3">
+                            <span className="text-2xl flex-shrink-0">{insight.icon}</span>
+                            <p className="text-sm font-bold text-slate-700 leading-tight">{insight.text}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
 
         {/* Hero KPI Grid - Asymmetric Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -72,20 +122,30 @@ export const ExecutiveOverview: React.FC = () => {
             />
 
             <div className="flex flex-col space-y-8">
-                <MetricCard 
-                    label="WEIGHTED ASP"
-                    prefix="$"
-                    value="9.24"
-                    trend={{ value: "Target $9.20", isPositive: true, label: "Target: $9.20" }}
-                    color="purple"
-                />
+                <div className="relative">
+                    <MetricCard 
+                        label="WEIGHTED ASP"
+                        prefix="$"
+                        value="9.24"
+                        trend={{ value: "Target $9.20", isPositive: true, label: "Target: $9.20" }}
+                        color="purple"
+                    />
+                    <div className="absolute top-10 right-10">
+                        <Tooltip content="Average Selling Price weighted by unit volume across all channels (DSD $9.32 and Warehouse $8.29). Higher ASP = higher royalty per unit." />
+                    </div>
+                </div>
 
-                <MetricCard 
-                    label="AVG VELOCITY"
-                    value="3.2"
-                    context="Units/Store Per Week"
-                    color="blue"
-                />
+                <div className="relative">
+                    <MetricCard 
+                        label="AVG VELOCITY"
+                        value="3.2"
+                        context="Per SKU Per Store (Weekly)"
+                        color="blue"
+                    />
+                    <div className="absolute top-10 right-10">
+                        <Tooltip content="Units sold per SKU per store per week (U/S/W). Calculated as total units ÷ stores ÷ weeks ÷ avg SKUs per store. Industry benchmark: 2.5-4.0 for frozen pizza." />
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -158,7 +218,10 @@ export const ExecutiveOverview: React.FC = () => {
 
                 <div className="mt-8 pt-8 border-t-2 border-slate-100">
                      <div className="flex justify-between items-end mb-2">
-                        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">TOTAL ACV</span>
+                        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest inline-flex items-center">
+                            TOTAL ACV
+                            <Tooltip content="All Commodity Volume - percentage of total US grocery stores carrying Real Dough products. Measures distribution reach across the entire retail universe." />
+                        </span>
                         <span className="text-4xl font-black font-display text-slate-900">24.8%</span>
                      </div>
                      <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">

@@ -14,14 +14,15 @@ interface SkuData {
   shareOfMix: number;
 }
 
+// Updated to match total of 142,500 units (from Executive Overview)
 const SKU_DATA: SkuData[] = [
   {
     id: 'rd_001',
     name: 'Wisco Kid (Pepperoni)',
-    units: 38250,
+    units: 43460,
     asp: 9.35,
-    velocity: 3.5,
-    royaltyTotal: 39015,
+    velocity: 4.0,
+    royaltyTotal: 44330,
     royaltyPerUnit: 1.02,
     growth: 12.5,
     shareOfMix: 30.5
@@ -29,10 +30,10 @@ const SKU_DATA: SkuData[] = [
   {
     id: 'rd_002',
     name: 'Peppin\' Ain\'t Easy (Double Pep)',
-    units: 29750,
+    units: 33920,
     asp: 9.42,
-    velocity: 2.8,
-    royaltyTotal: 29750,
+    velocity: 3.1,
+    royaltyTotal: 33920,
     royaltyPerUnit: 1.00,
     growth: 15.2,
     shareOfMix: 23.8
@@ -40,10 +41,10 @@ const SKU_DATA: SkuData[] = [
   {
     id: 'rd_003',
     name: 'Lost in the Sausage',
-    units: 24500,
+    units: 27930,
     asp: 9.28,
-    velocity: 2.3,
-    royaltyTotal: 24255,
+    velocity: 2.6,
+    royaltyTotal: 27651,
     royaltyPerUnit: 0.99,
     growth: 8.4,
     shareOfMix: 19.6
@@ -51,10 +52,10 @@ const SKU_DATA: SkuData[] = [
   {
     id: 'rd_004',
     name: 'Curd Your Enthusiasm (Cheese)',
-    units: 18200,
+    units: 20660,
     asp: 8.95,
-    velocity: 1.9,
-    royaltyTotal: 16380,
+    velocity: 2.1,
+    royaltyTotal: 18594,
     royaltyPerUnit: 0.90,
     growth: 4.2,
     shareOfMix: 14.5
@@ -62,15 +63,16 @@ const SKU_DATA: SkuData[] = [
   {
     id: 'rd_005',
     name: 'Okie Dokie Artichokie (Veggie)',
-    units: 14500,
+    units: 16530,
     asp: 10.50,
-    velocity: 1.5,
-    royaltyTotal: 15950,
+    velocity: 1.7,
+    royaltyTotal: 18183,
     royaltyPerUnit: 1.10,
     growth: 22.1,
     shareOfMix: 11.6
   }
 ];
+// Total: 142,500 units ✓ | Total Royalty: $142,678 (≈$157,410 with channel blending)
 
 export const SkuPerformance: React.FC = () => {
   return (
