@@ -9,20 +9,16 @@ import { MapPanel } from './components/MapPanel';
 import { ScenarioBuilder } from './components/ScenarioBuilder';
 import { RetailerTable } from './components/RetailerTable';
 import { ProjectionsView } from './components/ProjectionsView';
-import { LayoutDashboard, Map as MapIcon, Table, Calculator, Filter, Download, Pizza, Store as StoreIcon, MonitorPlay, DollarSign, TrendingUp, PieChart, Banknote, BarChart3, Package } from 'lucide-react';
+import { LayoutDashboard, Map as MapIcon, Table, Calculator, Download, Pizza, MonitorPlay, TrendingUp, PieChart, Banknote, BarChart3, Package } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const MainLayout: React.FC = () => {
-  const { state, setFilter, scenarios, filteredStores } = useSimulation();
+  const { scenarios } = useSimulation();
   
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ROYALTY' | 'RETAILER_PERF' | 'MARKET_PERF' | 'SKU_PERF' | 'PROJECTIONS' | 'MAP' | 'SCENARIO' | 'STORE_PERF'>('OVERVIEW'); 
   const [isExporting, setIsExporting] = useState(false);
-    const [presentationMode, setPresentationMode] = useState(false);
-
-    const setMetricMode = (mode: 'REVENUE' | 'PROFIT') => {
-        setFilter('metricMode', mode);
-    };
+  const [presentationMode, setPresentationMode] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -50,10 +46,6 @@ const MainLayout: React.FC = () => {
         }
     }
     setIsExporting(false);
-  };
-
-  const toggleMetric = () => {
-    setFilter('metricMode', state.metricMode === 'REVENUE' ? 'PROFIT' : 'REVENUE');
   };
 
   return (
@@ -188,43 +180,8 @@ const MainLayout: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Right Controls */}
+                {/* Right Controls - Clean & Minimal */}
                 <div className="flex items-center space-x-4">
-                    <div className="view-mode-toggle">
-                        <button 
-                            className={`toggle-option ${state.metricMode === 'REVENUE' ? 'active' : ''}`}
-                            onClick={() => setMetricMode('REVENUE')}
-                        >
-                            <span className="toggle-icon">💵</span>
-                            <span className="toggle-label">Revenue</span>
-                        </button>
-                        
-                        <button 
-                            className={`toggle-option ${state.metricMode === 'PROFIT' ? 'active' : ''}`}
-                            onClick={() => setMetricMode('PROFIT')}
-                        >
-                            <span className="toggle-icon">💰</span>
-                            <span className="toggle-label">Royalty</span>
-                        </button>
-                    </div>
-
-                    {activeTab === 'MAP' && (
-                        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
-                             <button 
-                                 onClick={() => setFilter('mapMode', 'PINS')}
-                                 className={`px-3 py-1.5 text-xs rounded transition-all ${state.mapMode === 'PINS' ? 'bg-white shadow text-slate-800 font-bold' : 'text-slate-500'}`}
-                             >
-                                 Pins
-                             </button>
-                             <button 
-                                 onClick={() => setFilter('mapMode', 'HEATMAP')}
-                                 className={`px-3 py-1.5 text-xs rounded transition-all ${state.mapMode === 'HEATMAP' ? 'bg-white shadow text-slate-800 font-bold' : 'text-slate-500'}`}
-                             >
-                                 Heatmap
-                             </button>
-                        </div>
-                    )}
-
                     <button 
                         onClick={handleExport}
                         disabled={isExporting}

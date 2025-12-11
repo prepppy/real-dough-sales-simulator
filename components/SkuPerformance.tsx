@@ -15,10 +15,11 @@ interface SkuData {
 }
 
 // Updated to match total of 142,500 units (from Executive Overview)
+// SKU names are brand-forward - creative names stand alone without generic descriptors
 const SKU_DATA: SkuData[] = [
   {
     id: 'rd_001',
-    name: 'Wisco Kid (Pepperoni)',
+    name: 'Wisco Kid',
     units: 43460,
     asp: 9.35,
     velocity: 4.0,
@@ -29,7 +30,7 @@ const SKU_DATA: SkuData[] = [
   },
   {
     id: 'rd_002',
-    name: 'Peppin\' Ain\'t Easy (Double Pep)',
+    name: "Peppin' Ain't Easy",
     units: 33920,
     asp: 9.42,
     velocity: 3.1,
@@ -51,7 +52,7 @@ const SKU_DATA: SkuData[] = [
   },
   {
     id: 'rd_004',
-    name: 'Curd Your Enthusiasm (Cheese)',
+    name: 'Curd Your Enthusiasm',
     units: 20660,
     asp: 8.95,
     velocity: 2.1,
@@ -62,7 +63,7 @@ const SKU_DATA: SkuData[] = [
   },
   {
     id: 'rd_005',
-    name: 'Okie Dokie Artichokie (Veggie)',
+    name: 'Okie Dokie Artichokie',
     units: 16530,
     asp: 10.50,
     velocity: 1.7,
