@@ -85,7 +85,7 @@ const generateStores = (): Store[] => {
 
 export const STORES: Store[] = generateStores();
 
-// Seed Data for 2026 Projections
+// Seed Data for 2027 Projections
 export interface QuarterlyProjection {
   quarter: string;
   revenue: number;
@@ -95,9 +95,9 @@ export interface QuarterlyProjection {
   growth: number;
 }
 
-export const PROJECTIONS_2026: QuarterlyProjection[] = [
+export const PROJECTIONS_2027: QuarterlyProjection[] = [
   {
-    quarter: 'Q1 2026',
+    quarter: 'Q1 2027',
     revenue: 4200000,
     profit: 1100000,
     activeStores: 1250,
@@ -105,7 +105,7 @@ export const PROJECTIONS_2026: QuarterlyProjection[] = [
     notes: "Post-holiday reset. Focus on DSD expansion in Midwest.",
   },
   {
-    quarter: 'Q2 2026',
+    quarter: 'Q2 2027',
     revenue: 4850000,
     profit: 1350000,
     activeStores: 1380,
@@ -113,7 +113,7 @@ export const PROJECTIONS_2026: QuarterlyProjection[] = [
     notes: "Spring resets complete. New National Account (Sprouts) ramping up.",
   },
   {
-    quarter: 'Q3 2026',
+    quarter: 'Q3 2027',
     revenue: 5600000,
     profit: 1550000,
     activeStores: 1450,
@@ -121,7 +121,7 @@ export const PROJECTIONS_2026: QuarterlyProjection[] = [
     notes: "Summer peak season. Costco rotation active.",
   },
   {
-    quarter: 'Q4 2026',
+    quarter: 'Q4 2027',
     revenue: 6100000,
     profit: 1650000,
     activeStores: 1520,

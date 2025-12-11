@@ -23,7 +23,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ label, current, total,
                 style={{ width: `${pct}%` }}
             ></div>
         </div>
-        {pending && <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">🚀 Launching Q3 2025</p>}
+        {pending && <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">🚀 Launching Q3 2026</p>}
     </div>
   );
 };

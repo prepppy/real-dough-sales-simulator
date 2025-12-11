@@ -28,13 +28,31 @@ export const RoyaltyDashboard: React.FC = () => {
 
   const totalRoyalty = dsdData.totalRoyalty + warehouseData.totalRoyalty;
 
-  // Q2 2025 Actuals - Only Target and Walmart launched
+  // Q2 2026 Actuals - Expanded DSD breakdown
+  // DSD Total: 89,250 units | Warehouse Total: 53,250 units
   const retailerRoyalties = [
-    { name: 'Target', channel: 'DSD', units: 89250, asp: 9.32, rate: 1.00, total: 89250 },
-    { name: 'Walmart', channel: 'Warehouse', units: 53250, asp: 8.29, rate: 1.28, total: 68160 },
-    // Publix - Launching Q3 2025
-    // Kroger - Launching Q3 2025
+    // DSD Retailers (Total: 89,250 units, $88,637 royalty)
+    { name: 'Target', channel: 'DSD', units: 45680, asp: 9.45, rate: 1.00, total: 45680, stores: 147 },
+    { name: 'Cub Foods', channel: 'DSD', units: 15220, asp: 9.28, rate: 0.99, total: 15068, stores: 62 },
+    { name: 'Festival Foods', channel: 'DSD', units: 8950, asp: 9.18, rate: 0.98, total: 8771, stores: 35 },
+    { name: "Pick 'n Save", channel: 'DSD', units: 7840, asp: 9.35, rate: 1.00, total: 7840, stores: 48 },
+    { name: "Woodman's", channel: 'DSD', units: 6420, asp: 9.22, rate: 0.98, total: 6292, stores: 18 },
+    { name: 'Jewel-Osco', channel: 'DSD', units: 5140, asp: 9.15, rate: 0.97, total: 4986, stores: 42 },
+    // Warehouse Retailer (Total: 53,250 units, $68,160 royalty)
+    { name: 'Walmart', channel: 'Warehouse', units: 53250, asp: 8.29, rate: 1.28, total: 68160, stores: 745 },
+    // Publix - Launching Q3 2026
+    // Kroger - Launching Q4 2026
   ];
+
+  // Channel totals for section headers
+  const dsdRetailers = retailerRoyalties.filter(r => r.channel === 'DSD');
+  const warehouseRetailers = retailerRoyalties.filter(r => r.channel === 'Warehouse');
+  const dsdTotalUnits = dsdRetailers.reduce((sum, r) => sum + r.units, 0);
+  const dsdTotalRoyalty = dsdRetailers.reduce((sum, r) => sum + r.total, 0);
+  const warehouseTotalUnits = warehouseRetailers.reduce((sum, r) => sum + r.units, 0);
+  const warehouseTotalRoyalty = warehouseRetailers.reduce((sum, r) => sum + r.total, 0);
+  const grandTotalUnits = dsdTotalUnits + warehouseTotalUnits;
+  const grandTotalRoyalty = dsdTotalRoyalty + warehouseTotalRoyalty;
 
   // ASP Distribution Mock Data
   const aspDistData = [
@@ -151,7 +169,7 @@ export const RoyaltyDashboard: React.FC = () => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-8">
                 <div>
-                    <span className="text-rd-green font-bold uppercase tracking-widest text-sm mb-2 block">Q2 2025 Total Royalty</span>
+                    <span className="text-rd-green font-bold uppercase tracking-widest text-sm mb-2 block">Q2 2026 Total Royalty</span>
                     <div className="flex items-baseline text-white">
                         <span className="text-4xl font-bold opacity-50 mr-2">$</span>
                         <span className="text-8xl md:text-9xl font-black font-display tracking-tighter leading-none">{totalRoyalty.toLocaleString()}</span>
@@ -159,7 +177,7 @@ export const RoyaltyDashboard: React.FC = () => {
                 </div>
                 <div className="text-right">
                     <div className="bg-white/10 backdrop-blur px-6 py-4 rounded-xl border border-white/10">
-                        <p className="text-white font-bold text-lg mb-1">💳 Payment Due: July 15, 2025</p>
+                        <p className="text-white font-bold text-lg mb-1">💳 Payment Due: July 15, 2026</p>
                         <p className="text-white/60 text-sm font-mono">Wire Transfer to Account ***6789</p>
                     </div>
                 </div>
@@ -169,34 +187,96 @@ export const RoyaltyDashboard: React.FC = () => {
         {/* Detailed Table & Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 bg-white p-8 rounded-[24px] border-3 border-black">
-                <h3 className="text-2xl font-bold text-slate-900 font-display mb-8">Royalty Breakdown</h3>
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 className="text-2xl font-bold text-slate-900 font-display">Royalty Breakdown</h3>
+                        <p className="text-sm text-slate-500 mt-1">Q2 2026 by retailer and channel</p>
+                    </div>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-xs tracking-wider">
                             <tr>
                                 <th className="p-4 rounded-l-lg">Retailer</th>
                                 <th className="p-4">Channel</th>
+                                <th className="p-4 text-right">Stores</th>
                                 <th className="p-4 text-right">Units</th>
                                 <th className="p-4 text-right">ASP</th>
                                 <th className="p-4 text-right">Rate</th>
                                 <th className="p-4 text-right rounded-r-lg">Total Royalty</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {retailerRoyalties.map((r) => (
-                                <tr key={r.name} className="hover:bg-slate-50 transition-colors group">
+                        <tbody>
+                            {/* DSD Section Header */}
+                            <tr className="bg-slate-50 border-y-2 border-slate-200">
+                                <td colSpan={7} className="p-4">
+                                    <div className="flex items-center space-x-4">
+                                        <span className="px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-rd-primary/10 text-rd-primary border border-rd-primary/20">
+                                            DSD Channel
+                                        </span>
+                                        <span className="text-sm font-semibold text-slate-500">
+                                            {dsdTotalUnits.toLocaleString()} units • {formatCurrency(dsdTotalRoyalty)} royalty
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            {/* DSD Retailers */}
+                            {dsdRetailers.map((r) => (
+                                <tr key={r.name} className="hover:bg-slate-50 transition-colors group border-b border-slate-100">
                                     <td className="p-4 font-bold text-slate-900 group-hover:text-rd-primary transition-colors">{r.name}</td>
                                     <td className="p-4">
-                                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${r.channel === 'DSD' ? 'bg-rd-primary/10 text-rd-primary' : 'bg-rd-blue/10 text-rd-blue'}`}>
-                                            {r.channel}
+                                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rd-primary/10 text-rd-primary">
+                                            DSD
                                         </span>
                                     </td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-500">{r.stores}</td>
                                     <td className="p-4 text-right font-mono font-medium text-slate-600">{r.units.toLocaleString()}</td>
                                     <td className="p-4 text-right font-mono font-medium text-slate-600">${r.asp.toFixed(2)}</td>
                                     <td className="p-4 text-right font-mono font-medium text-slate-600">${r.rate.toFixed(2)}</td>
                                     <td className="p-4 text-right font-bold text-rd-green">{formatCurrency(r.total)}</td>
                                 </tr>
                             ))}
+                            
+                            {/* Warehouse Section Header */}
+                            <tr className="bg-slate-50 border-y-2 border-slate-200">
+                                <td colSpan={7} className="p-4">
+                                    <div className="flex items-center space-x-4">
+                                        <span className="px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-rd-blue/10 text-rd-blue border border-rd-blue/20">
+                                            Warehouse Channel
+                                        </span>
+                                        <span className="text-sm font-semibold text-slate-500">
+                                            {warehouseTotalUnits.toLocaleString()} units • {formatCurrency(warehouseTotalRoyalty)} royalty
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            {/* Warehouse Retailers */}
+                            {warehouseRetailers.map((r) => (
+                                <tr key={r.name} className="hover:bg-slate-50 transition-colors group border-b border-slate-100">
+                                    <td className="p-4 font-bold text-slate-900 group-hover:text-rd-blue transition-colors">{r.name}</td>
+                                    <td className="p-4">
+                                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rd-blue/10 text-rd-blue">
+                                            Warehouse
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-500">{r.stores}</td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-600">{r.units.toLocaleString()}</td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.asp.toFixed(2)}</td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.rate.toFixed(2)}</td>
+                                    <td className="p-4 text-right font-bold text-rd-green">{formatCurrency(r.total)}</td>
+                                </tr>
+                            ))}
+                            
+                            {/* Grand Total Row */}
+                            <tr className="bg-slate-900 text-white">
+                                <td colSpan={3} className="p-5 font-black text-base rounded-bl-xl">TOTAL</td>
+                                <td className="p-5 text-right font-mono font-black text-base">{grandTotalUnits.toLocaleString()}</td>
+                                <td className="p-5 text-right font-mono font-medium text-slate-400">$9.24</td>
+                                <td className="p-5 text-right font-mono font-medium text-slate-400">$1.10</td>
+                                <td className="p-5 text-right font-black text-xl text-rd-green rounded-br-xl">{formatCurrency(grandTotalRoyalty)}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

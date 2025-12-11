@@ -9,7 +9,7 @@ import { Tooltip } from './common/Tooltip';
 export const ExecutiveOverview: React.FC = () => {
   const { formatCurrency } = useSimulation();
 
-  // Mock Data based on Spec for Q2 2025
+  // Mock Data based on Spec for Q2 2026
   const metrics = {
     qtdUnits: 142500,
     qtdRevenue: 1317375,
@@ -66,7 +66,7 @@ export const ExecutiveOverview: React.FC = () => {
         <PageHeader 
             number="01" 
             title="Executive Overview" 
-            subtitle="Q2 2025 Performance (Week 12)" 
+            subtitle="Q2 2026 Performance (Week 12)" 
             action={
                 <div className="text-right">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Launch Status</span>

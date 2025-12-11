@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { PROJECTIONS_2026 } from '../constants';
+import { PROJECTIONS_2027 } from '../constants';
 import { useSimulation } from '../context/SimulationContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from 'recharts';
 import { Store } from 'lucide-react';
 import { PageHeader } from './common/PageHeader';
 import { MetricCard } from './common/MetricCard';
 
-// Define 2025 Data locally as it's specific to this view's new requirement
-const PROJECTIONS_2025 = [
+// Define 2026 Data locally as it's specific to this view's new requirement
+const PROJECTIONS_2026 = [
   {
-    quarter: 'Q2 2025',
+    quarter: 'Q2 2026',
     revenue: 1320000,
     profit: 157000, // Representing Royalty
     activeStores: 245,
@@ -18,7 +18,7 @@ const PROJECTIONS_2025 = [
     status: "ACTUAL"
   },
   {
-    quarter: 'Q3 2025',
+    quarter: 'Q3 2026',
     revenue: 2640000,
     profit: 313000,
     activeStores: 580,
@@ -27,7 +27,7 @@ const PROJECTIONS_2025 = [
     status: "PROJECTED"
   },
   {
-    quarter: 'Q4 2025',
+    quarter: 'Q4 2026',
     revenue: 3530000,
     profit: 421000,
     activeStores: 920,
@@ -39,38 +39,38 @@ const PROJECTIONS_2025 = [
 
 export const ProjectionsView: React.FC = () => {
   const { formatCurrency } = useSimulation();
-  const [selectedYear, setSelectedYear] = useState<'2025' | '2026'>('2025');
+  const [selectedYear, setSelectedYear] = useState<'2026' | '2027'>('2026');
 
-  const currentData = selectedYear === '2025' ? PROJECTIONS_2025 : PROJECTIONS_2026;
-  const is2025 = selectedYear === '2025';
+  const currentData = selectedYear === '2026' ? PROJECTIONS_2026 : PROJECTIONS_2027;
+  const is2026 = selectedYear === '2026';
 
   const totalRevenue = currentData.reduce((acc, curr) => acc + curr.revenue, 0);
   const totalProfit = currentData.reduce((acc, curr) => acc + curr.profit, 0);
   
   // Calculate growth properly
-  const totalGrowth = is2025 
-    ? ((PROJECTIONS_2025[2].revenue - PROJECTIONS_2025[0].revenue) / PROJECTIONS_2025[0].revenue) * 100
-    : ((PROJECTIONS_2026[3].revenue - PROJECTIONS_2026[0].revenue) / PROJECTIONS_2026[0].revenue) * 100;
+  const totalGrowth = is2026 
+    ? ((PROJECTIONS_2026[2].revenue - PROJECTIONS_2026[0].revenue) / PROJECTIONS_2026[0].revenue) * 100
+    : ((PROJECTIONS_2027[3].revenue - PROJECTIONS_2027[0].revenue) / PROJECTIONS_2027[0].revenue) * 100;
 
   return (
     <div className="space-y-12 animate-fade-in pb-12">
       <PageHeader 
         number="06" 
-        title={is2025 ? '2025 Forecast' : '2026 Outlook'} 
-        subtitle={is2025 ? 'Current year performance and remaining quarterly targets' : 'Long-term projected performance based on growth targets'}
+        title={is2026 ? '2026 Forecast' : '2027 Outlook'} 
+        subtitle={is2026 ? 'Current year performance and remaining quarterly targets' : 'Long-term projected performance based on growth targets'}
         action={
             <div className="bg-slate-100 p-1.5 rounded-xl flex items-center shadow-inner">
                 <button 
-                    onClick={() => setSelectedYear('2025')}
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${is2025 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    2025
-                </button>
-                <button 
                     onClick={() => setSelectedYear('2026')}
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${!is2025 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${is2026 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     2026
+                </button>
+                <button 
+                    onClick={() => setSelectedYear('2027')}
+                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${!is2026 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    2027
                 </button>
             </div>
         }
@@ -79,12 +79,12 @@ export const ProjectionsView: React.FC = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <MetricCard 
-            label={is2025 ? 'TOTAL REVENUE' : 'PROJ REVENUE'}
+            label={is2026 ? 'TOTAL REVENUE' : 'PROJ REVENUE'}
             value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, notation: "compact" }).format(totalRevenue)}
             color="blue"
         />
         <MetricCard 
-            label={is2025 ? 'TOTAL ROYALTY' : 'PROJ PROFIT'}
+            label={is2026 ? 'TOTAL ROYALTY' : 'PROJ PROFIT'}
             value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, notation: "compact" }).format(totalProfit)}
             trend={{ value: `${(totalProfit/totalRevenue*100).toFixed(1)}% Margin`, isPositive: true }}
             color="green"
@@ -92,7 +92,7 @@ export const ProjectionsView: React.FC = () => {
         <MetricCard 
             label="GROWTH TARGET"
             value={`${totalGrowth.toFixed(1)}%`}
-            context={is2025 ? 'Launch to Year End' : 'Q1 to Q4 Acceleration'}
+            context={is2026 ? 'Launch to Year End' : 'Q1 to Q4 Acceleration'}
             color="purple"
         />
       </div>
@@ -101,7 +101,7 @@ export const ProjectionsView: React.FC = () => {
         {/* Main Chart */}
         <div className="lg:col-span-2 bg-white p-8 rounded-[24px] border-3 border-black">
             <h3 className="text-2xl font-bold text-slate-900 font-display mb-8">
-                {is2025 ? 'Revenue & Royalty Trajectory' : 'Revenue & Profit Trajectory'}
+                {is2026 ? 'Revenue & Royalty Trajectory' : 'Revenue & Profit Trajectory'}
             </h3>
             <div className="h-[400px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -140,7 +140,7 @@ export const ProjectionsView: React.FC = () => {
                             }}
                         />
                         <Area yAxisId="left" type="monotone" dataKey="revenue" name="Revenue" stroke="#0066FF" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenue)" />
-                        <Area yAxisId="left" type="monotone" dataKey="profit" name={is2025 ? "Royalty" : "Profit"} stroke="#00D084" strokeWidth={4} fillOpacity={1} fill="url(#colorProfit)" />
+                        <Area yAxisId="left" type="monotone" dataKey="profit" name={is2026 ? "Royalty" : "Profit"} stroke="#00D084" strokeWidth={4} fillOpacity={1} fill="url(#colorProfit)" />
                     </ComposedChart>
                 </ResponsiveContainer>
             </div>
@@ -158,7 +158,7 @@ export const ProjectionsView: React.FC = () => {
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center space-x-3">
                                 <span className="font-black text-xl text-slate-900">{q.quarter}</span>
-                                {is2025 && (
+                                {is2026 && (
                                     <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${
                                         (q as any).status === 'ACTUAL' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
                                     }`}>
@@ -176,7 +176,7 @@ export const ProjectionsView: React.FC = () => {
                                 <span className="text-lg font-bold text-slate-700">{formatCurrency(q.revenue)}</span>
                             </div>
                             <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider mb-1">{is2025 ? 'Royalty' : 'Profit'}</span>
+                                <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider mb-1">{is2026 ? 'Royalty' : 'Profit'}</span>
                                 <span className="text-lg font-bold text-rd-green">{formatCurrency(q.profit)}</span>
                             </div>
                         </div>

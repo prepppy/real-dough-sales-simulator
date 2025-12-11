@@ -108,9 +108,9 @@ const MainLayout: React.FC = () => {
                     active={activeTab === 'PROJECTIONS'} 
                     onClick={() => setActiveTab('PROJECTIONS')} 
                     icon={<TrendingUp size={20} />} 
-                    label="2025 Forecast" 
+                    label="2026 Forecast" 
                     number="06"
-                    dataPage="2025-forecast"
+                    dataPage="2026-forecast"
                 />
                 <NavButton 
                     active={activeTab === 'MAP'} 
