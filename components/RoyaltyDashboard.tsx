@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSimulation } from '../context/SimulationContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
-import { DollarSign, Activity, TrendingUp } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { PageHeader } from './common/PageHeader';
 
 export const RoyaltyDashboard: React.FC = () => {
   const { formatCurrency } = useSimulation();
@@ -46,131 +46,143 @@ export const RoyaltyDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
-        <div className="flex justify-between items-end">
-            <div>
-                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Royalty Dashboard</h2>
-                <p className="text-slate-500 mt-1">Q2 2025 Performance & Payment Calculator</p>
-            </div>
-            <div className="text-right bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100">
-                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block">Estimated Q2 Payment</span>
-                <span className="text-2xl font-bold text-emerald-700">{formatCurrency(totalRoyalty)}</span>
-                <span className="text-[10px] text-emerald-500 block mt-1">Due July 15, 2025</span>
-            </div>
-        </div>
+    <div className="space-y-12 animate-fade-in pb-12">
+        <PageHeader 
+            number="02" 
+            title="Royalty Dashboard" 
+            subtitle="Real-time ASP-based payment calculation" 
+        />
 
-        {/* Channel Breakdown Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Channel Comparison */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* DSD Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
-                <div className="flex justify-between items-start mb-6">
-                    <h3 className="font-bold text-slate-800 text-lg">DSD Channel</h3>
-                    <span className="bg-rose-50 text-rose-700 text-xs font-bold px-2 py-1 rounded">Target, Regional</span>
+            <div className="bg-white p-8 rounded-[24px] border-3 border-rd-primary relative overflow-hidden flex flex-col h-full shadow-lg shadow-rd-primary/5">
+                <div className="flex justify-between items-center mb-8">
+                    <span className="bg-rd-primary text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">DSD Channel</span>
+                    <span className="text-sm font-bold text-slate-400">Target, Regional</span>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-8 mb-8">
                     <div>
-                        <p className="text-xs text-slate-400 uppercase font-bold">Total Units</p>
-                        <p className="text-xl font-bold text-slate-700">{dsdData.units.toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 uppercase font-bold mb-1">Total Units</p>
+                        <p className="text-3xl font-black font-display text-slate-900">{dsdData.units.toLocaleString()}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-slate-400 uppercase font-bold">Weighted ASP</p>
-                        <p className="text-xl font-bold text-slate-700">${dsdData.weightedASP.toFixed(2)}</p>
+                        <p className="text-xs text-slate-400 uppercase font-bold mb-1">Weighted ASP</p>
+                        <p className="text-3xl font-black font-display text-slate-900">${dsdData.weightedASP.toFixed(2)}</p>
                     </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
-                    <div className="flex justify-between">
+                <div className="bg-slate-50 p-6 rounded-xl space-y-3 mb-auto">
+                    <div className="flex justify-between text-sm font-medium">
                         <span className="text-slate-500">Base Royalty</span>
-                        <span className="font-mono font-medium">${dsdData.baseRate.toFixed(2)}</span>
+                        <span className="font-mono text-slate-900">${dsdData.baseRate.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm font-medium">
                         <span className="text-slate-500">Additional (ASP Based)</span>
-                        <span className="font-mono font-medium">${dsdData.addlRate.toFixed(2)}</span>
+                        <span className="font-mono text-slate-900">${dsdData.addlRate.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between pt-2 border-t border-slate-200 font-bold text-slate-800">
-                        <span>Total Rate / Unit</span>
-                        <span className="font-mono">${dsdData.totalRate.toFixed(2)}</span>
+                    <div className="flex justify-between pt-3 border-t border-slate-200 font-bold text-base">
+                        <span className="text-slate-900">Total Rate / Unit</span>
+                        <span className="font-mono text-rd-primary">${dsdData.totalRate.toFixed(2)}</span>
                     </div>
                 </div>
                 
-                <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <span className="font-bold text-slate-600">Total DSD Royalty</span>
-                    <span className="text-2xl font-bold text-rose-600">{formatCurrency(dsdData.totalRoyalty)}</span>
+                <div className="mt-8 pt-6 border-t-2 border-slate-100 flex justify-between items-end">
+                    <span className="font-bold text-slate-400 uppercase text-sm tracking-wider">DSD Total</span>
+                    <span className="text-4xl font-black font-display text-rd-primary">{formatCurrency(dsdData.totalRoyalty)}</span>
                 </div>
             </div>
 
             {/* Warehouse Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                <div className="flex justify-between items-start mb-6">
-                    <h3 className="font-bold text-slate-800 text-lg">Warehouse Channel</h3>
-                    <span className="bg-blue-50 text-blue-700 text-xs font-bold px-2 py-1 rounded">Walmart, Costco</span>
+            <div className="bg-white p-8 rounded-[24px] border-3 border-rd-blue relative overflow-hidden flex flex-col h-full shadow-lg shadow-rd-blue/5">
+                <div className="flex justify-between items-center mb-8">
+                    <span className="bg-rd-blue text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Warehouse Channel</span>
+                    <span className="text-sm font-bold text-slate-400">Walmart, Costco</span>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-8 mb-8">
                     <div>
-                        <p className="text-xs text-slate-400 uppercase font-bold">Total Units</p>
-                        <p className="text-xl font-bold text-slate-700">{warehouseData.units.toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 uppercase font-bold mb-1">Total Units</p>
+                        <p className="text-3xl font-black font-display text-slate-900">{warehouseData.units.toLocaleString()}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-slate-400 uppercase font-bold">Weighted ASP</p>
-                        <p className="text-xl font-bold text-slate-700">${warehouseData.weightedASP.toFixed(2)}</p>
+                        <p className="text-xs text-slate-400 uppercase font-bold mb-1">Weighted ASP</p>
+                        <p className="text-3xl font-black font-display text-slate-900">${warehouseData.weightedASP.toFixed(2)}</p>
                     </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
-                    <div className="flex justify-between">
+                <div className="bg-slate-50 p-6 rounded-xl space-y-3 mb-auto">
+                    <div className="flex justify-between text-sm font-medium">
                         <span className="text-slate-500">Base Royalty</span>
-                        <span className="font-mono font-medium">${warehouseData.baseRate.toFixed(2)}</span>
+                        <span className="font-mono text-slate-900">${warehouseData.baseRate.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm font-medium">
                         <span className="text-slate-500">Additional (ASP Based)</span>
-                        <span className="font-mono font-medium">${warehouseData.addlRate.toFixed(2)}</span>
+                        <span className="font-mono text-slate-900">${warehouseData.addlRate.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between pt-2 border-t border-slate-200 font-bold text-slate-800">
-                        <span>Total Rate / Unit</span>
-                        <span className="font-mono">${warehouseData.totalRate.toFixed(2)}</span>
+                    <div className="flex justify-between pt-3 border-t border-slate-200 font-bold text-base">
+                        <span className="text-slate-900">Total Rate / Unit</span>
+                        <span className="font-mono text-rd-blue">${warehouseData.totalRate.toFixed(2)}</span>
                     </div>
                 </div>
                 
-                <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <span className="font-bold text-slate-600">Total Warehouse Royalty</span>
-                    <span className="text-2xl font-bold text-blue-600">{formatCurrency(warehouseData.totalRoyalty)}</span>
+                <div className="mt-8 pt-6 border-t-2 border-slate-100 flex justify-between items-end">
+                    <span className="font-bold text-slate-400 uppercase text-sm tracking-wider">Warehouse Total</span>
+                    <span className="text-4xl font-black font-display text-rd-blue">{formatCurrency(warehouseData.totalRoyalty)}</span>
+                </div>
+            </div>
+        </div>
+
+        {/* Grand Total - Massive */}
+        <div className="bg-bg-dark rounded-[24px] p-12 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+            <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-8">
+                <div>
+                    <span className="text-rd-green font-bold uppercase tracking-widest text-sm mb-2 block">Q2 2025 Total Royalty</span>
+                    <div className="flex items-baseline text-white">
+                        <span className="text-4xl font-bold opacity-50 mr-2">$</span>
+                        <span className="text-8xl md:text-9xl font-black font-display tracking-tighter leading-none">{totalRoyalty.toLocaleString()}</span>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <div className="bg-white/10 backdrop-blur px-6 py-4 rounded-xl border border-white/10">
+                        <p className="text-white font-bold text-lg mb-1">💳 Payment Due: July 15, 2025</p>
+                        <p className="text-white/60 text-sm font-mono">Wire Transfer to Account ***6789</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         {/* Detailed Table & Chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 className="font-bold text-slate-800 mb-6">Royalty Breakdown by Retailer</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 bg-white p-8 rounded-[24px] border-3 border-black">
+                <h3 className="text-2xl font-bold text-slate-900 font-display mb-8">Royalty Breakdown</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-500 font-semibold uppercase text-xs">
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-xs tracking-wider">
                             <tr>
-                                <th className="p-3 rounded-l-lg">Retailer</th>
-                                <th className="p-3">Channel</th>
-                                <th className="p-3 text-right">Units</th>
-                                <th className="p-3 text-right">ASP</th>
-                                <th className="p-3 text-right">Rate</th>
-                                <th className="p-3 text-right rounded-r-lg">Total Royalty</th>
+                                <th className="p-4 rounded-l-lg">Retailer</th>
+                                <th className="p-4">Channel</th>
+                                <th className="p-4 text-right">Units</th>
+                                <th className="p-4 text-right">ASP</th>
+                                <th className="p-4 text-right">Rate</th>
+                                <th className="p-4 text-right rounded-r-lg">Total Royalty</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {retailerRoyalties.map((r) => (
-                                <tr key={r.name} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="p-3 font-bold text-slate-700">{r.name}</td>
-                                    <td className="p-3">
-                                        <span className={`px-2 py-1 rounded text-xs font-bold ${r.channel === 'DSD' ? 'bg-rose-50 text-rose-700' : 'bg-blue-50 text-blue-700'}`}>
+                                <tr key={r.name} className="hover:bg-slate-50 transition-colors group">
+                                    <td className="p-4 font-bold text-slate-900 group-hover:text-rd-primary transition-colors">{r.name}</td>
+                                    <td className="p-4">
+                                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${r.channel === 'DSD' ? 'bg-rd-primary/10 text-rd-primary' : 'bg-rd-blue/10 text-rd-blue'}`}>
                                             {r.channel}
                                         </span>
                                     </td>
-                                    <td className="p-3 text-right font-mono text-slate-600">{r.units.toLocaleString()}</td>
-                                    <td className="p-3 text-right font-mono text-slate-600">${r.asp.toFixed(2)}</td>
-                                    <td className="p-3 text-right font-mono text-slate-600">${r.rate.toFixed(2)}</td>
-                                    <td className="p-3 text-right font-bold text-emerald-600">{formatCurrency(r.total)}</td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-600">{r.units.toLocaleString()}</td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.asp.toFixed(2)}</td>
+                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.rate.toFixed(2)}</td>
+                                    <td className="p-4 text-right font-bold text-rd-green">{formatCurrency(r.total)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -178,34 +190,41 @@ export const RoyaltyDashboard: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-                <h3 className="font-bold text-slate-800 mb-2">ASP Volume Distribution</h3>
-                <p className="text-xs text-slate-400 mb-6">Volume across price tiers</p>
-                <div className="flex-1 min-h-[250px]">
+            <div className="bg-white p-8 rounded-[24px] border-3 border-black flex flex-col">
+                <h3 className="text-xl font-bold text-slate-900 font-display mb-2">ASP Volume</h3>
+                <p className="text-sm text-slate-500 mb-8">Distribution across price tiers</p>
+                <div className="flex-1 min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={aspDistData} layout="vertical">
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                        <BarChart data={aspDistData} layout="vertical" margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+                            <CartesianGrid stroke="#f1f5f9" horizontal={false} />
                             <XAxis type="number" hide />
-                            <YAxis dataKey="range" type="category" width={70} tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} />
+                            <YAxis 
+                                dataKey="range" 
+                                type="category" 
+                                width={80} 
+                                tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} 
+                                axisLine={false} 
+                                tickLine={false} 
+                            />
                             <Tooltip 
                                 cursor={{fill: '#f8fafc'}}
-                                contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'}}
+                                contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', backgroundColor: '#000', color: '#fff'}}
+                                itemStyle={{color: '#fff'}}
                             />
-                            <Bar dataKey="volume" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24}>
+                            <Bar dataKey="volume" radius={[0, 6, 6, 0]} barSize={32}>
                                 {aspDistData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={index > 2 ? '#e11d48' : '#3b82f6'} />
+                                    <Cell key={`cell-${index}`} fill={index > 3 ? '#E53935' : '#0066FF'} />
                                 ))}
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="mt-4 text-center">
-                    <p className="text-xs text-slate-400">High Volume Zone</p>
-                    <p className="font-bold text-slate-700">$9.26 - $9.50 ASP</p>
+                <div className="mt-6 text-center bg-slate-50 p-4 rounded-xl">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Highest Volume Tier</p>
+                    <p className="text-lg font-bold text-slate-900">$9.26 - $9.50 ASP</p>
                 </div>
             </div>
         </div>
     </div>
   );
 };
-

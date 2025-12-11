@@ -1,6 +1,9 @@
 import React from 'react';
 import { useSimulation } from '../context/SimulationContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PageHeader } from './common/PageHeader';
+import { MetricCard } from './common/MetricCard';
+import { ProgressBar } from './common/ProgressBar';
 
 export const ExecutiveOverview: React.FC = () => {
   const { formatCurrency } = useSimulation();
@@ -33,86 +36,56 @@ export const ExecutiveOverview: React.FC = () => {
 
   return (
     <div className="space-y-12 animate-fade-in pb-12">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-            <div>
-                <div className="flex items-center space-x-3 mb-2">
-                    <span className="text-4xl font-bold font-display text-slate-300">01</span>
-                    <h2 className="text-5xl font-bold text-slate-900 font-display">Executive Overview</h2>
+        <PageHeader 
+            number="01" 
+            title="Executive Overview" 
+            subtitle="Q2 2025 Performance (Week 12)" 
+            action={
+                <div className="text-right">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Launch Status</span>
+                    <div className="inline-flex items-center bg-rd-green/10 text-rd-green px-4 py-2 rounded-full font-bold border border-rd-green/20">
+                        <div className="w-2.5 h-2.5 bg-rd-green rounded-full mr-2.5 animate-pulse"></div>
+                        Live in 895 Stores
+                    </div>
                 </div>
-                <p className="text-slate-500 text-lg font-medium">Q2 2025 Performance (Week 12)</p>
-            </div>
-            <div className="text-right">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Launch Status</span>
-                <div className="inline-flex items-center bg-rd-green/10 text-rd-green px-4 py-2 rounded-full font-bold border border-rd-green/20">
-                    <div className="w-2.5 h-2.5 bg-rd-green rounded-full mr-2.5 animate-pulse"></div>
-                    Live in 895 Stores
-                </div>
-            </div>
-        </div>
+            }
+        />
 
         {/* Hero KPI Grid - Asymmetric Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             
-            {/* Mega Card - Royalty */}
-            <div className="lg:col-span-2 metric-card bg-white rounded-[24px] border-3 border-black p-8 relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-rd-primary to-rd-secondary"></div>
-                <div className="flex justify-between items-start mb-6">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">EST. Q2 ROYALTY</span>
-                    <span className="bg-rd-green/10 text-rd-green text-xs font-bold px-3 py-1 rounded-full">+5% vs Goal</span>
-                </div>
-                <div className="flex items-baseline space-x-2">
-                    <span className="text-4xl font-bold text-slate-400">$</span>
-                    <span className="text-8xl font-black font-display text-slate-900 tracking-tighter">157,410</span>
-                </div>
-                <div className="mt-4 flex items-center space-x-2 text-sm font-medium text-slate-500">
-                   <span className="w-2 h-2 rounded-full bg-slate-300"></span>
-                   <span>Base $0.50</span>
-                   <span className="text-slate-300">|</span>
-                   <span className="w-2 h-2 rounded-full bg-rd-secondary"></span>
-                   <span>Add'l $0.60 avg</span>
-                </div>
-            </div>
+            <MetricCard 
+                size="mega"
+                label="EST. Q2 ROYALTY"
+                prefix="$"
+                value="157,410"
+                trend={{ value: "+5% vs Goal", isPositive: true }}
+                context="Base $0.50 + Add'l $0.60 avg"
+                color="red"
+            />
 
-            {/* Revenue Card */}
-            <div className="metric-card bg-white rounded-[24px] border-3 border-black p-8 relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-2 bg-rd-secondary"></div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-4">QTD REVENUE</span>
-                <div className="mb-2">
-                    <span className="text-4xl font-black font-display text-slate-900 tracking-tight">$1.32M</span>
-                </div>
-                <p className="text-sm font-bold text-rd-green">↑ +8% vs Goal</p>
-            </div>
+            <MetricCard 
+                label="QTD REVENUE"
+                value="$1.32M"
+                trend={{ value: "+8% vs Goal", isPositive: true }}
+                color="orange"
+            />
 
-            {/* Velocity & ASP Stacked */}
             <div className="flex flex-col space-y-8">
-                <div className="metric-card bg-white rounded-[24px] border-3 border-black p-6 relative overflow-hidden flex-1">
-                    <div className="absolute top-0 left-0 right-0 h-2 bg-rd-purple"></div>
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">WEIGHTED ASP</span>
-                            <span className="text-3xl font-black font-display text-slate-900">$9.24</span>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase block">Target</span>
-                            <span className="text-sm font-bold text-slate-600">$9.20</span>
-                        </div>
-                    </div>
-                </div>
+                <MetricCard 
+                    label="WEIGHTED ASP"
+                    prefix="$"
+                    value="9.24"
+                    trend={{ value: "Target $9.20", isPositive: true, label: "Target: $9.20" }}
+                    color="purple"
+                />
 
-                <div className="metric-card bg-white rounded-[24px] border-3 border-black p-6 relative overflow-hidden flex-1">
-                    <div className="absolute top-0 left-0 right-0 h-2 bg-rd-blue"></div>
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">AVG VELOCITY</span>
-                            <span className="text-3xl font-black font-display text-slate-900">3.2</span>
-                        </div>
-                        <div className="text-right">
-                             <span className="text-[10px] font-bold text-slate-400 uppercase block">Units/Store</span>
-                             <span className="text-sm font-bold text-slate-600">Per Week</span>
-                        </div>
-                    </div>
-                </div>
+                <MetricCard 
+                    label="AVG VELOCITY"
+                    value="3.2"
+                    context="Units/Store Per Week"
+                    color="blue"
+                />
             </div>
         </div>
 
@@ -176,10 +149,10 @@ export const ExecutiveOverview: React.FC = () => {
                     <h3 className="text-2xl font-bold text-slate-900 font-display mb-8">Distribution</h3>
                     
                     <div className="space-y-8">
-                        <DistroBar retailer="Target" current={147} target={150} color="bg-rd-primary" />
-                        <DistroBar retailer="Walmart" current={745} target={750} color="bg-rd-blue" />
-                        <DistroBar retailer="Publix" current={0} target={250} color="bg-rd-green" pending />
-                        <DistroBar retailer="Kroger" current={0} target={200} color="bg-rd-purple" pending />
+                        <ProgressBar label="Target" current={147} total={150} color="bg-rd-primary" />
+                        <ProgressBar label="Walmart" current={745} total={750} color="bg-rd-blue" />
+                        <ProgressBar label="Publix" current={0} total={250} color="bg-rd-green" pending />
+                        <ProgressBar label="Kroger" current={0} total={200} color="bg-rd-purple" pending />
                     </div>
                 </div>
 
@@ -197,23 +170,4 @@ export const ExecutiveOverview: React.FC = () => {
         </div>
     </div>
   );
-};
-
-const DistroBar = ({ retailer, current, target, color, pending }: any) => {
-    const pct = Math.min(100, (current / target) * 100);
-    return (
-        <div>
-            <div className="flex justify-between text-sm mb-2">
-                <span className="font-bold text-slate-900">{retailer}</span>
-                <span className="font-bold text-slate-500 tabular-nums">{current} <span className="text-slate-300">/</span> {target}</span>
-            </div>
-            <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                    className={`h-full ${pending ? 'bg-slate-300' : color} transition-all duration-1000 ease-out`} 
-                    style={{ width: `${pct}%` }}
-                ></div>
-            </div>
-            {pending && <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">🚀 Launching Q3 2025</p>}
-        </div>
-    );
 };

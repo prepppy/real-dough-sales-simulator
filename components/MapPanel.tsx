@@ -5,6 +5,7 @@ import { useSimulation } from '../context/SimulationContext';
 import { Store } from '../types';
 import { MARKET_DATA } from '../constants';
 import L from 'leaflet';
+import { PageHeader } from './common/PageHeader';
 
 const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
 const iconShadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
@@ -147,218 +148,226 @@ export const MapPanel: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-white">
-      
-      {/* Floating Controls */}
-      <div className="absolute top-4 right-4 z-[500] bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-xl border border-slate-200 flex flex-col gap-4 min-w-[260px]">
-         
-         {/* View Mode Toggle */}
-         <div className="flex bg-slate-100 p-1 rounded-lg">
-             <button 
-                onClick={() => setViewMode('STORES')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === 'STORES' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-             >
-                Store Pins
-             </button>
-             <button 
-                onClick={() => setViewMode('MARKETS')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === 'MARKETS' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-             >
-                Market Analysis
-             </button>
-         </div>
+    <div className="space-y-8 animate-fade-in pb-12 h-full flex flex-col">
+      <PageHeader 
+        number="07" 
+        title="Distribution Map" 
+        subtitle="Geographic coverage & analysis" 
+      />
 
-         {viewMode === 'MARKETS' && (
-             <div className="space-y-3">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Performance Overlay</h4>
-                 <div className="grid grid-cols-2 gap-2">
-                     {['STORE_COUNT', 'REVENUE', 'VELOCITY', 'GROWTH'].map((m) => (
-                         <button 
-                            key={m}
-                            onClick={() => setActiveMetric(m as MetricType)}
-                            className={`px-2 py-1.5 text-[10px] font-bold rounded border transition-all ${activeMetric === m ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
-                         >
-                            {m.replace('_', ' ')}
-                         </button>
-                     ))}
-                 </div>
-                 
-                 <div className="bg-slate-50 p-2 rounded text-[10px] text-slate-500 border border-slate-100">
-                    <p>Size: {activeMetric === 'VELOCITY' ? 'Fixed (Color Only)' : activeMetric.replace('_', ' ')}</p>
-                    <p>Color: {activeMetric === 'VELOCITY' ? 'Velocity Intensity' : 'Metric Intensity'}</p>
-                 </div>
-             </div>
-         )}
+      <div className="relative w-full flex-1 min-h-[500px] rounded-[24px] overflow-hidden border-3 border-black bg-white">
+        
+        {/* Floating Controls */}
+        <div className="absolute top-4 right-4 z-[500] bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-xl border-2 border-slate-200 flex flex-col gap-4 min-w-[260px]">
+          
+          {/* View Mode Toggle */}
+          <div className="flex bg-slate-100 p-1 rounded-lg">
+              <button 
+                  onClick={() => setViewMode('STORES')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === 'STORES' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                  Store Pins
+              </button>
+              <button 
+                  onClick={() => setViewMode('MARKETS')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === 'MARKETS' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                  Market Analysis
+              </button>
+          </div>
 
-         {viewMode === 'STORES' && (
-             <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Legend</h4>
-                <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-red-600 shadow-sm"></div>
-                    <span className="text-sm text-slate-700 font-medium">DSD Accounts</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-600 shadow-sm"></div>
-                    <span className="text-sm text-slate-700 font-medium">National Accounts</span>
-                </div>
-             </div>
-         )}
-         
-         <hr className="border-slate-100" />
-         
-         <button 
-           onClick={() => setRadiusMode(!radiusMode)}
-           className={`px-3 py-2 text-xs font-bold rounded-lg shadow-sm transition-all duration-200 ${radiusMode ? 'bg-slate-800 text-white ring-2 ring-slate-300' : 'bg-white border border-slate-200 text-slate-600 hover:bg-stone-50 hover:border-slate-300'}`}
-         >
-             {radiusMode ? 'Click Map to set Center' : 'Enable Radius Tool (50mi)'}
-         </button>
+          {viewMode === 'MARKETS' && (
+              <div className="space-y-3">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Performance Overlay</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                      {['STORE_COUNT', 'REVENUE', 'VELOCITY', 'GROWTH'].map((m) => (
+                          <button 
+                              key={m}
+                              onClick={() => setActiveMetric(m as MetricType)}
+                              className={`px-2 py-1.5 text-[10px] font-bold rounded border transition-all ${activeMetric === m ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                          >
+                              {m.replace('_', ' ')}
+                          </button>
+                      ))}
+                  </div>
+                  
+                  <div className="bg-slate-50 p-2 rounded text-[10px] text-slate-500 border border-slate-100">
+                      <p>Size: {activeMetric === 'VELOCITY' ? 'Fixed (Color Only)' : activeMetric.replace('_', ' ')}</p>
+                      <p>Color: {activeMetric === 'VELOCITY' ? 'Velocity Intensity' : 'Metric Intensity'}</p>
+                  </div>
+              </div>
+          )}
 
-         {radiusMode && activeCenter && (
-             <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 shadow-inner">
-                 <p className="font-bold text-slate-800 mb-1">TAM Analysis Result</p>
-                 <div className="flex justify-between items-center mb-1">
-                     <span>Stores:</span>
-                     <span className="font-mono font-bold">{tamCount}</span>
-                 </div>
-                 <div className="flex justify-between items-center">
-                     <span>Revenue:</span>
-                     <span className="text-emerald-600 font-bold">{formatCurrency(tamValue)}</span>
-                 </div>
-             </div>
-         )}
+          {viewMode === 'STORES' && (
+              <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Legend</h4>
+                  <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-red-600 shadow-sm"></div>
+                      <span className="text-sm text-slate-700 font-medium">DSD Accounts</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-600 shadow-sm"></div>
+                      <span className="text-sm text-slate-700 font-medium">National Accounts</span>
+                  </div>
+              </div>
+          )}
+          
+          <hr className="border-slate-100" />
+          
+          <button 
+            onClick={() => setRadiusMode(!radiusMode)}
+            className={`px-3 py-2 text-xs font-bold rounded-lg shadow-sm transition-all duration-200 ${radiusMode ? 'bg-slate-800 text-white ring-2 ring-slate-300' : 'bg-white border-2 border-slate-200 text-slate-600 hover:bg-stone-50 hover:border-slate-300'}`}
+          >
+              {radiusMode ? 'Click Map to set Center' : 'Enable Radius Tool (50mi)'}
+          </button>
+
+          {radiusMode && activeCenter && (
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 shadow-inner">
+                  <p className="font-bold text-slate-800 mb-1">TAM Analysis Result</p>
+                  <div className="flex justify-between items-center mb-1">
+                      <span>Stores:</span>
+                      <span className="font-mono font-bold">{tamCount}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                      <span>Revenue:</span>
+                      <span className="text-emerald-600 font-bold">{formatCurrency(tamValue)}</span>
+                  </div>
+              </div>
+          )}
+        </div>
+
+        <MapContainer 
+          center={[39.8283, -98.5795]} 
+          zoom={5} 
+          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={true}
+          zoomControl={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          <MapController stores={filteredStores} viewMode={viewMode} />
+          <MapEvents onMapClick={handleMapClick} />
+          <TAMCalculator center={activeCenter} radius={50} stores={filteredStores} onCalculate={(val, count) => { setTamValue(val); setTamCount(count); }} />
+
+          {/* MARKET ANALYSIS MODE */}
+          {viewMode === 'MARKETS' && (
+              <>
+                  {MARKET_DATA.map(market => {
+                      const style = getBubbleStyle(market, activeMetric);
+                      return (
+                          <CircleMarker 
+                              key={market.id}
+                              center={[market.lat, market.lng]}
+                              radius={style.radius}
+                              pathOptions={{ 
+                                  fillColor: style.color, 
+                                  color: style.color, 
+                                  weight: 1, 
+                                  opacity: 1, 
+                                  fillOpacity: 0.6 
+                              }}
+                          >
+                              {/* Always Visible Label */}
+                              <LeafletTooltip direction="top" offset={[0, -style.radius]} opacity={1} permanent>
+                                  <div className="text-xs font-bold text-slate-800 text-center">
+                                      {market.name}
+                                      <div className="font-normal text-[10px] text-slate-500">
+                                          {activeMetric === 'REVENUE' && formatCurrency(market.revenue)}
+                                          {activeMetric === 'VELOCITY' && `${market.velocity} U/S/W`}
+                                          {activeMetric === 'STORE_COUNT' && `${market.storeCount} Stores`}
+                                          {activeMetric === 'GROWTH' && `+${market.growth}% Growth`}
+                                      </div>
+                                  </div>
+                              </LeafletTooltip>
+                              
+                              <Popup className="custom-popup">
+                                  <div className="p-2 min-w-[200px]">
+                                      <h3 className="font-bold text-slate-900 text-base mb-1">{market.name}</h3>
+                                      <p className="text-xs text-slate-500 mb-3">{market.retailers.join(', ')}</p>
+                                      
+                                      <div className="grid grid-cols-2 gap-2 text-xs">
+                                          <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                                              <p className="text-slate-400 uppercase text-[10px]">Revenue</p>
+                                              <p className="font-bold text-slate-700">{formatCurrency(market.revenue)}</p>
+                                          </div>
+                                          <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                                              <p className="text-slate-400 uppercase text-[10px]">Velocity</p>
+                                              <p className="font-bold text-slate-700">{market.velocity}</p>
+                                          </div>
+                                          <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                                              <p className="text-slate-400 uppercase text-[10px]">Share</p>
+                                              <p className="font-bold text-slate-700">{market.share}%</p>
+                                          </div>
+                                          <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                                              <p className="text-slate-400 uppercase text-[10px]">Growth</p>
+                                              <p className="font-bold text-emerald-600">+{market.growth}%</p>
+                                          </div>
+                                      </div>
+                                      
+                                      <div className="mt-3 pt-3 border-t border-slate-100 text-xs">
+                                          <p className="text-slate-400 uppercase text-[10px] mb-1">Top Competitor</p>
+                                          <p className="font-bold text-rose-600">{market.topCompetitor} <span className="text-rose-400 font-normal">(+{market.competitorGrowth}%)</span></p>
+                                      </div>
+                                  </div>
+                              </Popup>
+                          </CircleMarker>
+                      )
+                  })}
+              </>
+          )}
+
+          {/* STORE PINS MODE (Existing Logic) */}
+          {viewMode === 'STORES' && (
+              <MarkerClusterGroup 
+                  chunkedLoading 
+                  maxClusterRadius={60}
+                  polygonOptions={{
+                      fillColor: '#3b82f6',
+                      color: '#2563eb',
+                      weight: 2,
+                      opacity: 1,
+                      fillOpacity: 0.2
+                  }}
+              >
+              {filteredStores.map(store => {
+                  const channel = getRetailerChannel(store.retailerId);
+                  return (
+                      <Marker 
+                          key={store.id} 
+                          position={[store.lat, store.lng]} 
+                          icon={channel === 'DSD' ? dsdIcon : nationalIcon}
+                      >
+                      <Popup className="custom-popup">
+                          <div className="p-1 min-w-[160px]">
+                              <h3 className="font-bold text-slate-900 text-sm mb-1">{store.name}</h3>
+                              <div className="flex items-center space-x-2 mb-3">
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${channel === 'DSD' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
+                                      {channel}
+                                  </span>
+                                  <span className="text-xs text-slate-500 font-medium">{store.state}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                  <div>
+                                      <p className="text-slate-400 uppercase tracking-wider text-[10px]">Velocity</p>
+                                      <p className="font-bold text-slate-700 text-sm">{store.baseVelocity.toFixed(1)}</p>
+                                  </div>
+                                  <div>
+                                      <p className="text-slate-400 uppercase tracking-wider text-[10px]">SKUs</p>
+                                      <p className="font-bold text-slate-700 text-sm">{store.currentSkuCount}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </Popup>
+                      </Marker>
+                  );
+              })}
+              </MarkerClusterGroup>
+          )}
+        </MapContainer>
       </div>
-
-      <MapContainer 
-        center={[39.8283, -98.5795]} 
-        zoom={5} 
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={true}
-        zoomControl={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        <MapController stores={filteredStores} viewMode={viewMode} />
-        <MapEvents onMapClick={handleMapClick} />
-        <TAMCalculator center={activeCenter} radius={50} stores={filteredStores} onCalculate={(val, count) => { setTamValue(val); setTamCount(count); }} />
-
-        {/* MARKET ANALYSIS MODE */}
-        {viewMode === 'MARKETS' && (
-            <>
-                {MARKET_DATA.map(market => {
-                    const style = getBubbleStyle(market, activeMetric);
-                    return (
-                        <CircleMarker 
-                            key={market.id}
-                            center={[market.lat, market.lng]}
-                            radius={style.radius}
-                            pathOptions={{ 
-                                fillColor: style.color, 
-                                color: style.color, 
-                                weight: 1, 
-                                opacity: 1, 
-                                fillOpacity: 0.6 
-                            }}
-                        >
-                            {/* Always Visible Label */}
-                            <LeafletTooltip direction="top" offset={[0, -style.radius]} opacity={1} permanent>
-                                <div className="text-xs font-bold text-slate-800 text-center">
-                                    {market.name}
-                                    <div className="font-normal text-[10px] text-slate-500">
-                                        {activeMetric === 'REVENUE' && formatCurrency(market.revenue)}
-                                        {activeMetric === 'VELOCITY' && `${market.velocity} U/S/W`}
-                                        {activeMetric === 'STORE_COUNT' && `${market.storeCount} Stores`}
-                                        {activeMetric === 'GROWTH' && `+${market.growth}% Growth`}
-                                    </div>
-                                </div>
-                            </LeafletTooltip>
-                            
-                            <Popup className="custom-popup">
-                                <div className="p-2 min-w-[200px]">
-                                    <h3 className="font-bold text-slate-900 text-base mb-1">{market.name}</h3>
-                                    <p className="text-xs text-slate-500 mb-3">{market.retailers.join(', ')}</p>
-                                    
-                                    <div className="grid grid-cols-2 gap-2 text-xs">
-                                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                            <p className="text-slate-400 uppercase text-[10px]">Revenue</p>
-                                            <p className="font-bold text-slate-700">{formatCurrency(market.revenue)}</p>
-                                        </div>
-                                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                            <p className="text-slate-400 uppercase text-[10px]">Velocity</p>
-                                            <p className="font-bold text-slate-700">{market.velocity}</p>
-                                        </div>
-                                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                            <p className="text-slate-400 uppercase text-[10px]">Share</p>
-                                            <p className="font-bold text-slate-700">{market.share}%</p>
-                                        </div>
-                                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                                            <p className="text-slate-400 uppercase text-[10px]">Growth</p>
-                                            <p className="font-bold text-emerald-600">+{market.growth}%</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="mt-3 pt-3 border-t border-slate-100 text-xs">
-                                        <p className="text-slate-400 uppercase text-[10px] mb-1">Top Competitor</p>
-                                        <p className="font-bold text-rose-600">{market.topCompetitor} <span className="text-rose-400 font-normal">(+{market.competitorGrowth}%)</span></p>
-                                    </div>
-                                </div>
-                            </Popup>
-                        </CircleMarker>
-                    )
-                })}
-            </>
-        )}
-
-        {/* STORE PINS MODE (Existing Logic) */}
-        {viewMode === 'STORES' && (
-            <MarkerClusterGroup 
-                chunkedLoading 
-                maxClusterRadius={60}
-                polygonOptions={{
-                    fillColor: '#3b82f6',
-                    color: '#2563eb',
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.2
-                }}
-            >
-            {filteredStores.map(store => {
-                const channel = getRetailerChannel(store.retailerId);
-                return (
-                    <Marker 
-                        key={store.id} 
-                        position={[store.lat, store.lng]} 
-                        icon={channel === 'DSD' ? dsdIcon : nationalIcon}
-                    >
-                    <Popup className="custom-popup">
-                        <div className="p-1 min-w-[160px]">
-                            <h3 className="font-bold text-slate-900 text-sm mb-1">{store.name}</h3>
-                            <div className="flex items-center space-x-2 mb-3">
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${channel === 'DSD' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
-                                    {channel}
-                                </span>
-                                <span className="text-xs text-slate-500 font-medium">{store.state}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                <div>
-                                    <p className="text-slate-400 uppercase tracking-wider text-[10px]">Velocity</p>
-                                    <p className="font-bold text-slate-700 text-sm">{store.baseVelocity.toFixed(1)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-slate-400 uppercase tracking-wider text-[10px]">SKUs</p>
-                                    <p className="font-bold text-slate-700 text-sm">{store.currentSkuCount}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </Popup>
-                    </Marker>
-                );
-            })}
-            </MarkerClusterGroup>
-        )}
-      </MapContainer>
     </div>
   );
 };
