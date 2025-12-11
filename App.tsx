@@ -75,7 +75,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'OVERVIEW'} 
                     onClick={() => setActiveTab('OVERVIEW')} 
-                    icon={<PieChart />} 
+                    icon={<PieChart size={20} />} 
                     label="Executive Overview" 
                     number="01"
                     dataPage="executive-overview"
@@ -83,7 +83,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'ROYALTY'} 
                     onClick={() => setActiveTab('ROYALTY')} 
-                    icon={<Banknote />} 
+                    icon={<Banknote size={20} />} 
                     label="Royalty Dashboard" 
                     number="02"
                     dataPage="royalty-dashboard"
@@ -91,7 +91,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'RETAILER_PERF'} 
                     onClick={() => setActiveTab('RETAILER_PERF')} 
-                    icon={<LayoutDashboard />} 
+                    icon={<LayoutDashboard size={20} />} 
                     label="Retailer Performance" 
                     number="03"
                     dataPage="retailer-performance"
@@ -99,7 +99,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'MARKET_PERF'} 
                     onClick={() => setActiveTab('MARKET_PERF')} 
-                    icon={<BarChart3 />} 
+                    icon={<BarChart3 size={20} />} 
                     label="Market Performance" 
                     number="04"
                     dataPage="market-performance"
@@ -107,7 +107,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'SKU_PERF'} 
                     onClick={() => setActiveTab('SKU_PERF')} 
-                    icon={<Package />} 
+                    icon={<Package size={20} />} 
                     label="SKU Performance" 
                     number="05"
                     dataPage="sku-performance"
@@ -115,7 +115,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'PROJECTIONS'} 
                     onClick={() => setActiveTab('PROJECTIONS')} 
-                    icon={<TrendingUp />} 
+                    icon={<TrendingUp size={20} />} 
                     label="2025 Forecast" 
                     number="06"
                     dataPage="2025-forecast"
@@ -123,7 +123,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'MAP'} 
                     onClick={() => setActiveTab('MAP')} 
-                    icon={<MapIcon />} 
+                    icon={<MapIcon size={20} />} 
                     label="Distribution Map" 
                     number="07"
                     dataPage="distribution-map"
@@ -131,7 +131,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'SCENARIO'} 
                     onClick={() => setActiveTab('SCENARIO')} 
-                    icon={<Calculator />} 
+                    icon={<Calculator size={20} />} 
                     label="Scenario Builder" 
                     number="08"
                     dataPage="scenario-builder"
@@ -139,7 +139,7 @@ const MainLayout: React.FC = () => {
                 <NavButton 
                     active={activeTab === 'STORE_PERF'} 
                     onClick={() => setActiveTab('STORE_PERF')} 
-                    icon={<Table />} 
+                    icon={<Table size={20} />} 
                     label="Store Data" 
                     number="09"
                     dataPage="store-data"
