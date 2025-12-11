@@ -186,36 +186,36 @@ export const RoyaltyDashboard: React.FC = () => {
 
         {/* Detailed Table & Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-white p-8 rounded-[24px] border-3 border-black">
-                <div className="flex items-center justify-between mb-8">
+            <div className="lg:col-span-2 bg-white p-6 rounded-[24px] border-3 border-black">
+                <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h3 className="text-2xl font-bold text-slate-900 font-display">Royalty Breakdown</h3>
+                        <h3 className="text-xl font-bold text-slate-900 font-display">Royalty Breakdown</h3>
                         <p className="text-sm text-slate-500 mt-1">Q2 2026 by retailer and channel</p>
                     </div>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-xs tracking-wider">
+                <div>
+                    <table className="w-full text-sm text-left" style={{ tableLayout: 'fixed' }}>
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
                             <tr>
-                                <th className="p-4 rounded-l-lg">Retailer</th>
-                                <th className="p-4">Channel</th>
-                                <th className="p-4 text-right">Stores</th>
-                                <th className="p-4 text-right">Units</th>
-                                <th className="p-4 text-right">ASP</th>
-                                <th className="p-4 text-right">Rate</th>
-                                <th className="p-4 text-right rounded-r-lg">Total Royalty</th>
+                                <th className="py-3 px-2 rounded-l-lg" style={{ width: '22%' }}>Retailer</th>
+                                <th className="py-3 px-2" style={{ width: '14%' }}>Channel</th>
+                                <th className="py-3 px-2 text-right" style={{ width: '10%' }}>Stores</th>
+                                <th className="py-3 px-2 text-right" style={{ width: '14%' }}>Units</th>
+                                <th className="py-3 px-2 text-right" style={{ width: '12%' }}>ASP</th>
+                                <th className="py-3 px-2 text-right" style={{ width: '10%' }}>Rate</th>
+                                <th className="py-3 px-2 text-right rounded-r-lg" style={{ width: '18%' }}>Royalty</th>
                             </tr>
                         </thead>
                         <tbody>
                             {/* DSD Section Header */}
                             <tr className="bg-slate-50 border-y-2 border-slate-200">
-                                <td colSpan={7} className="p-4">
-                                    <div className="flex items-center space-x-4">
-                                        <span className="px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-rd-primary/10 text-rd-primary border border-rd-primary/20">
-                                            DSD Channel
+                                <td colSpan={7} className="py-3 px-2">
+                                    <div className="flex items-center space-x-3">
+                                        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-rd-primary/10 text-rd-primary border border-rd-primary/20">
+                                            DSD
                                         </span>
-                                        <span className="text-sm font-semibold text-slate-500">
-                                            {dsdTotalUnits.toLocaleString()} units • {formatCurrency(dsdTotalRoyalty)} royalty
+                                        <span className="text-xs font-semibold text-slate-500">
+                                            {dsdTotalUnits.toLocaleString()} units • {formatCurrency(dsdTotalRoyalty)}
                                         </span>
                                     </div>
                                 </td>
@@ -224,29 +224,29 @@ export const RoyaltyDashboard: React.FC = () => {
                             {/* DSD Retailers */}
                             {dsdRetailers.map((r) => (
                                 <tr key={r.name} className="hover:bg-slate-50 transition-colors group border-b border-slate-100">
-                                    <td className="p-4 font-bold text-slate-900 group-hover:text-rd-primary transition-colors">{r.name}</td>
-                                    <td className="p-4">
-                                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rd-primary/10 text-rd-primary">
+                                    <td className="py-3 px-2 font-bold text-slate-900 group-hover:text-rd-primary transition-colors truncate">{r.name}</td>
+                                    <td className="py-3 px-2">
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-rd-primary/10 text-rd-primary">
                                             DSD
                                         </span>
                                     </td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-500">{r.stores}</td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-600">{r.units.toLocaleString()}</td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.asp.toFixed(2)}</td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.rate.toFixed(2)}</td>
-                                    <td className="p-4 text-right font-bold text-rd-green">{formatCurrency(r.total)}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-500 tabular-nums">{r.stores}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-600 tabular-nums">{r.units.toLocaleString()}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-600 tabular-nums">${r.asp.toFixed(2)}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-600 tabular-nums">${r.rate.toFixed(2)}</td>
+                                    <td className="py-3 px-2 text-right font-bold text-rd-green tabular-nums">{formatCurrency(r.total)}</td>
                                 </tr>
                             ))}
                             
                             {/* Warehouse Section Header */}
                             <tr className="bg-slate-50 border-y-2 border-slate-200">
-                                <td colSpan={7} className="p-4">
-                                    <div className="flex items-center space-x-4">
-                                        <span className="px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-rd-blue/10 text-rd-blue border border-rd-blue/20">
-                                            Warehouse Channel
+                                <td colSpan={7} className="py-3 px-2">
+                                    <div className="flex items-center space-x-3">
+                                        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-rd-blue/10 text-rd-blue border border-rd-blue/20">
+                                            Warehouse
                                         </span>
-                                        <span className="text-sm font-semibold text-slate-500">
-                                            {warehouseTotalUnits.toLocaleString()} units • {formatCurrency(warehouseTotalRoyalty)} royalty
+                                        <span className="text-xs font-semibold text-slate-500">
+                                            {warehouseTotalUnits.toLocaleString()} units • {formatCurrency(warehouseTotalRoyalty)}
                                         </span>
                                     </div>
                                 </td>
@@ -255,27 +255,27 @@ export const RoyaltyDashboard: React.FC = () => {
                             {/* Warehouse Retailers */}
                             {warehouseRetailers.map((r) => (
                                 <tr key={r.name} className="hover:bg-slate-50 transition-colors group border-b border-slate-100">
-                                    <td className="p-4 font-bold text-slate-900 group-hover:text-rd-blue transition-colors">{r.name}</td>
-                                    <td className="p-4">
-                                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rd-blue/10 text-rd-blue">
-                                            Warehouse
+                                    <td className="py-3 px-2 font-bold text-slate-900 group-hover:text-rd-blue transition-colors truncate">{r.name}</td>
+                                    <td className="py-3 px-2">
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-rd-blue/10 text-rd-blue">
+                                            WH
                                         </span>
                                     </td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-500">{r.stores}</td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-600">{r.units.toLocaleString()}</td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.asp.toFixed(2)}</td>
-                                    <td className="p-4 text-right font-mono font-medium text-slate-600">${r.rate.toFixed(2)}</td>
-                                    <td className="p-4 text-right font-bold text-rd-green">{formatCurrency(r.total)}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-500 tabular-nums">{r.stores}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-600 tabular-nums">{r.units.toLocaleString()}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-600 tabular-nums">${r.asp.toFixed(2)}</td>
+                                    <td className="py-3 px-2 text-right font-mono text-slate-600 tabular-nums">${r.rate.toFixed(2)}</td>
+                                    <td className="py-3 px-2 text-right font-bold text-rd-green tabular-nums">{formatCurrency(r.total)}</td>
                                 </tr>
                             ))}
                             
                             {/* Grand Total Row */}
                             <tr className="bg-slate-900 text-white">
-                                <td colSpan={3} className="p-5 font-black text-base rounded-bl-xl">TOTAL</td>
-                                <td className="p-5 text-right font-mono font-black text-base">{grandTotalUnits.toLocaleString()}</td>
-                                <td className="p-5 text-right font-mono font-medium text-slate-400">$9.24</td>
-                                <td className="p-5 text-right font-mono font-medium text-slate-400">$1.10</td>
-                                <td className="p-5 text-right font-black text-xl text-rd-green rounded-br-xl">{formatCurrency(grandTotalRoyalty)}</td>
+                                <td colSpan={3} className="py-4 px-2 font-black text-sm rounded-bl-xl">TOTAL</td>
+                                <td className="py-4 px-2 text-right font-mono font-bold tabular-nums">{grandTotalUnits.toLocaleString()}</td>
+                                <td className="py-4 px-2 text-right font-mono text-slate-400 tabular-nums">$9.24</td>
+                                <td className="py-4 px-2 text-right font-mono text-slate-400 tabular-nums">$1.10</td>
+                                <td className="py-4 px-2 text-right font-black text-lg text-rd-green rounded-br-xl tabular-nums">{formatCurrency(grandTotalRoyalty)}</td>
                             </tr>
                         </tbody>
                     </table>
