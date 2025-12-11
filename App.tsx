@@ -18,7 +18,11 @@ const MainLayout: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ROYALTY' | 'RETAILER_PERF' | 'MARKET_PERF' | 'SKU_PERF' | 'PROJECTIONS' | 'MAP' | 'SCENARIO' | 'STORE_PERF'>('OVERVIEW'); 
   const [isExporting, setIsExporting] = useState(false);
-  const [presentationMode, setPresentationMode] = useState(false);
+    const [presentationMode, setPresentationMode] = useState(false);
+
+    const setMetricMode = (mode: 'REVENUE' | 'PROFIT') => {
+        setFilter('metricMode', mode);
+    };
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -55,103 +59,95 @@ const MainLayout: React.FC = () => {
   return (
     <div className="flex h-screen w-full bg-bg-primary font-sans text-slate-800 overflow-hidden">
         {/* Sidebar - Hidden in Presentation Mode */}
-        <aside className={`${presentationMode ? '-ml-72' : 'w-20 lg:w-72'} bg-bg-dark text-white flex flex-col flex-shrink-0 transition-all duration-500 ease-in-out shadow-xl z-30`}>
-            <div className="p-6 flex items-center space-x-4 border-b border-slate-800/50">
-                <div className="bg-rd-primary p-2.5 rounded-xl shadow-lg">
-                    <Pizza size={28} className="text-white" />
+        <aside className={`${presentationMode ? '-ml-72' : 'w-[280px]'} sidebar flex flex-col flex-shrink-0 transition-all duration-500 ease-in-out shadow-xl z-30`}>
+            {/* Brand Section */}
+            <div className="brand-section">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-rd-primary p-2 rounded-xl shadow-lg inline-block">
+                        <Pizza size={24} className="text-white" />
+                    </div>
                 </div>
-                <div className={`hidden lg:block transition-opacity duration-300 ${presentationMode ? 'opacity-0' : 'opacity-100'}`}>
-                  <h1 className="font-display font-bold text-xl tracking-tight block">Real Dough</h1>
-                  <span className="text-xs text-slate-400 font-medium tracking-wide">Sales Simulator v2.0</span>
-                </div>
+                <h3>Real Dough</h3>
+                <p className="subtitle">Sales Dashboard v2.0</p>
             </div>
             
-            <nav className="flex-1 py-6 space-y-2 px-3 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 overflow-y-auto custom-scrollbar">
                 <NavButton 
                     active={activeTab === 'OVERVIEW'} 
                     onClick={() => setActiveTab('OVERVIEW')} 
-                    icon={<PieChart size={20} />} 
+                    icon={<PieChart />} 
                     label="Executive Overview" 
                     number="01"
-                    color="red"
-                    collapsed={presentationMode}
+                    dataPage="executive-overview"
                 />
                 <NavButton 
                     active={activeTab === 'ROYALTY'} 
                     onClick={() => setActiveTab('ROYALTY')} 
-                    icon={<Banknote size={20} />} 
+                    icon={<Banknote />} 
                     label="Royalty Dashboard" 
                     number="02"
-                    color="orange"
-                    collapsed={presentationMode}
+                    dataPage="royalty-dashboard"
                 />
                 <NavButton 
                     active={activeTab === 'RETAILER_PERF'} 
                     onClick={() => setActiveTab('RETAILER_PERF')} 
-                    icon={<LayoutDashboard size={20} />} 
+                    icon={<LayoutDashboard />} 
                     label="Retailer Performance" 
                     number="03"
-                    color="purple"
-                    collapsed={presentationMode}
+                    dataPage="retailer-performance"
                 />
                 <NavButton 
                     active={activeTab === 'MARKET_PERF'} 
                     onClick={() => setActiveTab('MARKET_PERF')} 
-                    icon={<BarChart3 size={20} />} 
+                    icon={<BarChart3 />} 
                     label="Market Performance" 
                     number="04"
-                    color="blue"
-                    collapsed={presentationMode}
+                    dataPage="market-performance"
                 />
                 <NavButton 
                     active={activeTab === 'SKU_PERF'} 
                     onClick={() => setActiveTab('SKU_PERF')} 
-                    icon={<Package size={20} />} 
+                    icon={<Package />} 
                     label="SKU Performance" 
                     number="05"
-                    color="green"
-                    collapsed={presentationMode}
+                    dataPage="sku-performance"
                 />
                 <NavButton 
                     active={activeTab === 'PROJECTIONS'} 
                     onClick={() => setActiveTab('PROJECTIONS')} 
-                    icon={<TrendingUp size={20} />} 
+                    icon={<TrendingUp />} 
                     label="2025 Forecast" 
                     number="06"
-                    color="yellow"
-                    collapsed={presentationMode}
+                    dataPage="2025-forecast"
                 />
                 <NavButton 
                     active={activeTab === 'MAP'} 
                     onClick={() => setActiveTab('MAP')} 
-                    icon={<MapIcon size={20} />} 
+                    icon={<MapIcon />} 
                     label="Distribution Map" 
                     number="07"
-                    color="pink" // Using pink for map as per plan
-                    collapsed={presentationMode}
+                    dataPage="distribution-map"
                 />
                 <NavButton 
                     active={activeTab === 'SCENARIO'} 
                     onClick={() => setActiveTab('SCENARIO')} 
-                    icon={<Calculator size={20} />} 
+                    icon={<Calculator />} 
                     label="Scenario Builder" 
                     number="08"
-                    color="cyan" // Cyan isn't in config but we can handle it or use blue
-                    collapsed={presentationMode}
+                    dataPage="scenario-builder"
                 />
                 <NavButton 
                     active={activeTab === 'STORE_PERF'} 
                     onClick={() => setActiveTab('STORE_PERF')} 
-                    icon={<Table size={20} />} 
+                    icon={<Table />} 
                     label="Store Data" 
                     number="09"
-                    color="gray"
-                    collapsed={presentationMode}
+                    dataPage="store-data"
                 />
             </nav>
 
-            <div className="p-4 border-t border-slate-800/50">
-                <div className="hidden lg:block bg-slate-800/50 rounded-xl p-4 text-xs text-slate-400 border border-slate-700/50">
+            <div className="p-4 border-t border-white/10">
+                <div className="bg-white/5 rounded-xl p-4 text-xs text-slate-400 border border-white/10">
                     <p className="font-bold text-slate-300 mb-2 uppercase tracking-wider text-[10px]">Saved Scenarios</p>
                     {scenarios.length === 0 ? (
                         <p className="italic opacity-50">No active scenarios.</p>
@@ -194,17 +190,23 @@ const MainLayout: React.FC = () => {
 
                 {/* Right Controls */}
                 <div className="flex items-center space-x-4">
-                    <button
-                        onClick={toggleMetric}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
-                            state.metricMode === 'PROFIT' 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                        }`}
-                    >
-                        <DollarSign size={16} />
-                        <span>{state.metricMode === 'PROFIT' ? 'Net Profit' : 'Revenue'}</span>
-                    </button>
+                    <div className="view-mode-toggle">
+                        <button 
+                            className={`toggle-option ${state.metricMode === 'REVENUE' ? 'active' : ''}`}
+                            onClick={() => setMetricMode('REVENUE')}
+                        >
+                            <span className="toggle-icon">💵</span>
+                            <span className="toggle-label">Revenue</span>
+                        </button>
+                        
+                        <button 
+                            className={`toggle-option ${state.metricMode === 'PROFIT' ? 'active' : ''}`}
+                            onClick={() => setMetricMode('PROFIT')}
+                        >
+                            <span className="toggle-icon">💰</span>
+                            <span className="toggle-label">Royalty</span>
+                        </button>
+                    </div>
 
                     {activeTab === 'MAP' && (
                         <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
@@ -258,43 +260,19 @@ interface NavButtonProps {
     icon: React.ReactNode;
     label: string;
     number: string;
-    color: string;
-    collapsed: boolean;
+    dataPage: string;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label, number, color, collapsed }) => {
-    // Determine styles based on color prop
-    let activeBg = 'bg-slate-800';
-    let hoverColor = 'text-slate-400';
-    let activeShadow = 'shadow-slate-900/20';
-
-    if (color === 'red') { activeBg = 'bg-rd-primary'; hoverColor = 'hover:text-rd-primary'; activeShadow = 'shadow-rd-primary/30'; }
-    if (color === 'orange') { activeBg = 'bg-rd-secondary'; hoverColor = 'hover:text-rd-secondary'; activeShadow = 'shadow-rd-secondary/30'; }
-    if (color === 'purple') { activeBg = 'bg-rd-purple'; hoverColor = 'hover:text-rd-purple'; activeShadow = 'shadow-rd-purple/30'; }
-    if (color === 'blue') { activeBg = 'bg-rd-blue'; hoverColor = 'hover:text-rd-blue'; activeShadow = 'shadow-rd-blue/30'; }
-    if (color === 'green') { activeBg = 'bg-rd-green'; hoverColor = 'hover:text-rd-green'; activeShadow = 'shadow-rd-green/30'; }
-    if (color === 'yellow') { activeBg = 'bg-rd-yellow'; hoverColor = 'hover:text-rd-yellow'; activeShadow = 'shadow-rd-yellow/30'; }
-    // Add other color logic if needed, fallback to default for now
-
+const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label, number, dataPage }) => {
     return (
         <button 
             onClick={onClick}
-            title={collapsed ? label : ''}
-            className={`
-                w-full flex items-center space-x-3 px-5 py-4 rounded-xl transition-all duration-200 group nav-item
-                ${active 
-                    ? `${activeBg} text-white shadow-lg ${activeShadow} font-bold` 
-                    : `text-slate-400 hover:bg-slate-800/50 hover:text-white ${hoverColor}`
-                }
-            `}
+            data-page={dataPage}
+            className={`nav-item ${active ? 'active' : ''}`}
         >
-            <div className={`text-[10px] font-bold opacity-50 w-4 tabular-nums ${active ? 'text-white' : 'text-slate-600'}`}>
-                {number}
-            </div>
-            <div className={active ? 'text-white' : 'group-hover:scale-110 transition-transform'}>
-                {icon}
-            </div>
-            {!collapsed && <span className="hidden lg:block font-medium text-sm tracking-wide">{label}</span>}
+            <span className="nav-number">{number}</span>
+            <span className="nav-icon">{icon}</span>
+            <span className="nav-label">{label}</span>
         </button>
     );
 };

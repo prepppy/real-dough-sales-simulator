@@ -19,70 +19,78 @@ export const MarketPerformance: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-6">
         {MARKET_DATA.map((market, index) => (
-          <div key={market.id} className="bg-white rounded-[24px] border-3 border-black p-8 transition-all hover:-translate-y-1 hover:shadow-xl group">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div key={market.id} className="market-card">
+            {/* Rank Badge */}
+            <div className="market-rank">
+                {index + 1}
+            </div>
+
+            {/* Market Info */}
+            <div className="market-info">
+              <div className="market-header">
+                <h3 className="market-name">{market.name}</h3>
+                {market.growth > 30 && (
+                  <span className="market-badge">
+                    Hot Market
+                  </span>
+                )}
+              </div>
               
-              {/* Market Header */}
-              <div className="flex items-start space-x-6 lg:w-1/3">
-                <div className="bg-slate-900 text-white p-4 rounded-2xl font-black text-2xl w-16 h-16 flex items-center justify-center shadow-lg">
-                  {index + 1}
-                </div>
-                <div>
-                  <h3 className="text-2xl font-black font-display text-slate-900 flex items-center gap-3">
-                    {market.name}
-                    {market.growth > 30 && (
-                      <span className="bg-rd-green/10 text-rd-green text-[10px] px-2 py-1 rounded-full uppercase tracking-wider font-bold border border-rd-green/20">
-                        Hot Market
-                      </span>
-                    )}
-                  </h3>
-                  <div className="flex items-center space-x-4 mt-2 text-sm font-bold text-slate-500">
-                    <span className="flex items-center"><MapPin size={16} className="mr-1.5" /> {market.storeCount} Stores</span>
-                    <span className="flex items-center"><TrendingUp size={16} className="mr-1.5" /> {market.share}% Share</span>
-                  </div>
-                </div>
+              <div className="market-meta">
+                <span className="market-meta-item">
+                  <MapPin size={16} />
+                  {market.storeCount} Stores
+                </span>
+                <span className="market-meta-item">
+                  <TrendingUp size={16} />
+                  {market.share}% Share
+                </span>
               </div>
+            </div>
 
-              {/* Key Metrics */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Revenue</div>
-                    <div className="text-xl font-black text-slate-900">${(market.revenue / 1000).toFixed(1)}K</div>
+            {/* Key Metrics */}
+            <div className="market-metrics">
+                <div className="market-metric">
+                    <span className="metric-label">Revenue</span>
+                    <span className="metric-value">${(market.revenue / 1000).toFixed(1)}k</span>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Velocity</div>
-                    <div className="text-xl font-black text-slate-900">{market.velocity} <span className="text-xs text-slate-400 font-medium">U/S/W</span></div>
+                
+                <div className="market-metric">
+                    <span className="metric-label">Velocity</span>
+                    <span className="metric-value">{market.velocity}</span>
+                    <span className="metric-unit">U/S/W</span>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Growth</div>
-                    <div className={`text-xl font-black flex items-center ${market.growth >= 0 ? 'text-rd-green' : 'text-rd-primary'}`}>
-                        {market.growth >= 0 ? <ArrowUpRight size={20} className="mr-1" /> : <ArrowDownRight size={20} className="mr-1" />}
+                
+                <div className="market-metric">
+                    <span className="metric-label">Growth</span>
+                    <span className="metric-value" style={{ color: market.growth >= 0 ? '#00D084' : '#E53935' }}>
+                        {market.growth >= 0 ? <ArrowUpRight size={20} className="inline mr-1" /> : <ArrowDownRight size={20} className="inline mr-1" />}
                         {Math.abs(market.growth)}%
-                    </div>
+                    </span>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Top Rival</div>
-                    <div className="text-sm font-bold text-slate-700 truncate" title={market.topCompetitor}>
-                        {market.topCompetitor}
-                    </div>
-                    <div className="text-xs text-rd-primary font-bold">+{market.competitorGrowth}%</div>
+                
+                <div className="market-metric">
+                    <span className="metric-label">Top Rival</span>
+                    <span className="competitor-name" title={market.topCompetitor}>{market.topCompetitor}</span>
+                    <span className="competitor-growth">+{market.competitorGrowth}%</span>
                 </div>
-              </div>
+            </div>
 
-              {/* Retailer Context */}
-              <div className="lg:w-1/4 lg:border-l-2 border-slate-100 lg:pl-8">
-                 <div className="text-[10px] font-bold text-slate-400 uppercase mb-3 flex items-center tracking-wider">
-                    <ShoppingCart size={12} className="mr-1.5" /> Key Retailers
-                 </div>
-                 <div className="flex flex-wrap gap-2">
-                    {market.retailers.map((r, i) => (
-                        <span key={i} className="inline-block bg-white border-2 border-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg">
-                            {r}
-                        </span>
-                    ))}
-                 </div>
-              </div>
-
+            {/* Key Retailers */}
+            <div className="market-retailers">
+                 <span className="retailers-label">Key Retailers</span>
+                 {market.retailers.map((r, i) => {
+                    const match = r.match(/(.*) \((\d+)\)/);
+                    const name = match ? match[1] : r;
+                    const count = match ? match[2] : '';
+                    
+                    return (
+                        <div key={i} className="retailer-item">
+                            <span>{name}</span>
+                            {count && <span className="retailer-count">{count}</span>}
+                        </div>
+                    );
+                 })}
             </div>
           </div>
         ))}
